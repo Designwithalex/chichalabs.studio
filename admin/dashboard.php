@@ -56,6 +56,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('UPDATE projects SET status = ? WHERE id = ?');
             $stmt->execute([$status, (int) ($_POST['project_id'] ?? 0)]);
         }
+    } elseif ($action === 'update_project') {
+        $id   = (int) ($_POST['project_id'] ?? 0);
+        $name = trim((string) ($_POST['name'] ?? ''));
+        if ($id > 0 && $name !== '') {
+            $stmt = $pdo->prepare('UPDATE projects SET name = ? WHERE id = ?');
+            $stmt->execute([$name, $id]);
+        }
+    } elseif ($action === 'delete_project') {
+        $id = (int) ($_POST['project_id'] ?? 0);
+        if ($id > 0) {
+            /* Cascada manual (FK RESTRICT): notas y módulos de sus propuestas,
+               luego las propuestas, y por último el proyecto. */
+            try {
+                $pdo->beginTransaction();
+                $pdo->prepare('DELETE pin FROM proposal_internal_notes pin JOIN proposals p ON p.id = pin.proposal_id WHERE p.project_id = ?')->execute([$id]);
+                $pdo->prepare('DELETE pm FROM proposal_modules pm JOIN proposals p ON p.id = pm.proposal_id WHERE p.project_id = ?')->execute([$id]);
+                $pdo->prepare('DELETE FROM proposals WHERE project_id = ?')->execute([$id]);
+                $pdo->prepare('DELETE FROM projects WHERE id = ?')->execute([$id]);
+                $pdo->commit();
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+            }
+        }
     } elseif ($action === 'update_client') {
         $id    = (int) ($_POST['client_id'] ?? 0);
         $name  = trim((string) ($_POST['name'] ?? ''));
@@ -214,6 +237,23 @@ require __DIR__ . '/inc/header.php';
               </select>
             </form>
           </div>
+
+          <details class="admin-form-wrap admin-form-wrap--tight admin-form-wrap--sub">
+            <summary>Editar / eliminar proyecto</summary>
+            <form method="POST" class="admin-form admin-form--inline">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="update_project">
+              <input type="hidden" name="project_id" value="<?= (int) $project['id'] ?>">
+              <label>Nombre del proyecto <input type="text" name="name" value="<?= htmlspecialchars($project['name'], ENT_QUOTES, 'UTF-8') ?>" required></label>
+              <button type="submit" class="btn btn--ghost">Guardar nombre</button>
+            </form>
+            <form method="POST" class="admin-client__delete" onsubmit="return confirm('¿Eliminar el proyecto «<?= htmlspecialchars(addslashes($project['name']), ENT_QUOTES, 'UTF-8') ?>» y TODAS sus propuestas, módulos y notas? Esta acción no se puede deshacer.');">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="delete_project">
+              <input type="hidden" name="project_id" value="<?= (int) $project['id'] ?>">
+              <button type="submit" class="admin-btn-danger">Eliminar proyecto</button>
+            </form>
+          </details>
 
           <ul class="admin-proposal-list">
             <?php foreach ($project['proposals'] as $proposal): ?>
