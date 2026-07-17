@@ -15,11 +15,13 @@
 -- "Duplicate column name" — en ese caso esa columna ya estaba y podés ignorarlo.
 -- =============================================================================
 
+-- Nota: en la base de producción estas columnas YA existen (decimal(10,2)).
+-- Esta migración queda documentada para reconstruir la base desde cero.
 ALTER TABLE proposals
-  ADD COLUMN hourly_rate DECIMAL(12,2) NULL AFTER currency;
+  ADD COLUMN hourly_rate DECIMAL(10,2) NULL AFTER currency;
 
 ALTER TABLE proposal_modules
-  ADD COLUMN hours DECIMAL(8,2) NULL AFTER description;
+  ADD COLUMN hours DECIMAL(10,2) NULL AFTER description;
 
 -- Verificación (opcional): deberían aparecer las columnas nuevas.
 -- SHOW COLUMNS FROM proposals LIKE 'hourly_rate';
