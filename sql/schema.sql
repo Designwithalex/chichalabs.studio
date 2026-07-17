@@ -34,6 +34,7 @@ CREATE TABLE proposals (
   status VARCHAR(50) NOT NULL DEFAULT 'borrador',
   -- borrador | enviada | aceptada | vencida
   currency VARCHAR(10) DEFAULT 'ARS',
+  hourly_rate DECIMAL(12,2) NULL,             -- valor hora global; precio de cada módulo = hourly_rate × módulo.hours
   payment_terms TEXT,
   validity_days INT DEFAULT 15,
   general_notes TEXT,
@@ -54,6 +55,7 @@ CREATE TABLE proposal_modules (
   name VARCHAR(255) NOT NULL,
   category VARCHAR(100) NOT NULL,
   description TEXT,                          -- bullets, un ítem por línea con "- " adelante
+  hours DECIMAL(8,2) NULL,                   -- horas estimadas del módulo; precio = proposals.hourly_rate × hours
   price_min DECIMAL(12,2) NOT NULL,
   price_max DECIMAL(12,2) NOT NULL,           -- si el precio ya está cerrado, price_min = price_max
   billing_type VARCHAR(20) NOT NULL DEFAULT 'once',  -- 'once' | 'monthly'
