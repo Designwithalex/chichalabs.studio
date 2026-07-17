@@ -213,7 +213,7 @@ require __DIR__ . '/inc/header.php';
   </div>
 
   <?php if ($isAccepted): ?>
-    <div class="admin-panel">
+    <div class="admin-panel admin-panel--accepted">
       <p><strong>Esta propuesta ya fue aceptada</strong> el <?= htmlspecialchars((string) $proposal['accepted_at'], ENT_QUOTES, 'UTF-8') ?> — quedó en solo lectura.</p>
       <p>Total único aceptado: <?= $proposal['accepted_total_once'] !== null ? htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_once'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') : '—' ?></p>
       <p>Total mensual aceptado: <?= $proposal['accepted_total_monthly'] !== null ? htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_monthly'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') : '—' ?></p>
@@ -221,22 +221,25 @@ require __DIR__ . '/inc/header.php';
   <?php else: ?>
 
     <div class="admin-panel">
-      <p><strong>Link para el cliente:</strong>
-        <a href="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?></a>
-      </p>
-      <?php if ($proposal['status'] === 'borrador'): ?>
-        <form method="POST">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="mark_sent">
-          <button type="submit" class="btn btn--ghost">Marcar como enviada</button>
-        </form>
-      <?php else: ?>
-        <form method="POST">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="mark_sent">
-          <button type="submit" class="btn btn--text">Reenviar (renueva validez desde hoy)</button>
-        </form>
-      <?php endif; ?>
+      <div class="admin-panel__row">
+        <div class="admin-panel__link">
+          <span class="admin-panel__link-label">Link para el cliente</span>
+          <a class="admin-linkbox" href="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?></a>
+        </div>
+        <?php if ($proposal['status'] === 'borrador'): ?>
+          <form method="POST">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="mark_sent">
+            <button type="submit" class="btn btn--ghost">Marcar como enviada</button>
+          </form>
+        <?php else: ?>
+          <form method="POST">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="mark_sent">
+            <button type="submit" class="btn btn--text">Reenviar (renueva validez desde hoy)</button>
+          </form>
+        <?php endif; ?>
+      </div>
     </div>
 
     <section class="admin-section">
@@ -245,11 +248,13 @@ require __DIR__ . '/inc/header.php';
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="update_proposal">
         <label>Título <input type="text" name="title" value="<?= htmlspecialchars($proposal['title'], ENT_QUOTES, 'UTF-8') ?>" required></label>
-        <label>Moneda <input type="text" name="currency" value="<?= htmlspecialchars($proposal['currency'], ENT_QUOTES, 'UTF-8') ?>" required></label>
-        <label>Valor hora <input type="number" name="hourly_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['hourly_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 30"></label>
+        <div class="admin-cols">
+          <label>Moneda <input type="text" name="currency" value="<?= htmlspecialchars($proposal['currency'], ENT_QUOTES, 'UTF-8') ?>" required></label>
+          <label>Valor hora <input type="number" name="hourly_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['hourly_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 30"></label>
+        </div>
         <p class="admin-hint">El precio de cada módulo se calcula como <strong>valor hora × horas</strong>. Al guardar, se recalculan todos los módulos con este valor.</p>
         <label>Condiciones de pago <textarea name="payment_terms" rows="2"><?= htmlspecialchars((string) $proposal['payment_terms'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
-        <label>Validez (días) <input type="number" name="validity_days" min="1" value="<?= (int) $proposal['validity_days'] ?>" required></label>
+        <label class="admin-field--sm">Validez (días) <input type="number" name="validity_days" min="1" value="<?= (int) $proposal['validity_days'] ?>" required></label>
         <label>Notas generales <textarea name="general_notes" rows="2"><?= htmlspecialchars((string) $proposal['general_notes'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
         <button type="submit" class="btn btn--ghost">Guardar datos</button>
       </form>
@@ -262,25 +267,37 @@ require __DIR__ . '/inc/header.php';
         <input type="hidden" name="action" value="<?= $editModule ? 'update_module' : 'add_module' ?>">
         <?php if ($editModule): ?><input type="hidden" name="module_id" value="<?= (int) $editModule['id'] ?>"><?php endif; ?>
 
-        <label>Número <input type="number" name="module_number" min="1" value="<?= $editModule ? (int) $editModule['module_number'] : $nextModuleNumber ?>" required></label>
-        <label>Nombre <input type="text" name="name" value="<?= htmlspecialchars($editModule['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required></label>
+        <div class="admin-cols admin-cols--id">
+          <label>Número <input type="number" name="module_number" min="1" value="<?= $editModule ? (int) $editModule['module_number'] : $nextModuleNumber ?>" required></label>
+          <label>Nombre <input type="text" name="name" value="<?= htmlspecialchars($editModule['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required></label>
+        </div>
         <label>Categoría <input type="text" name="category" value="<?= htmlspecialchars($editModule['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required></label>
         <label>Descripción (bullets, uno por línea con "- ")
           <textarea name="description" rows="4" placeholder="- Item uno&#10;- Item dos"><?= htmlspecialchars($editModule['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
         </label>
-        <label>Horas <input type="number" name="hours" id="module-hours" step="any" min="0" value="<?= htmlspecialchars((string) ($editModule['hours'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" required></label>
-        <p class="admin-hint">Precio calculado: <strong id="module-price-preview">—</strong> <span class="admin-muted">(valor hora × horas)</span></p>
-        <label>Tipo de cobro
-          <select name="billing_type">
-            <option value="once" <?= (($editModule['billing_type'] ?? 'once') === 'once') ? 'selected' : '' ?>>Costo único</option>
-            <option value="monthly" <?= (($editModule['billing_type'] ?? '') === 'monthly') ? 'selected' : '' ?>>Mensual</option>
-          </select>
-        </label>
+        <div class="admin-cols">
+          <label>Horas <input type="number" name="hours" id="module-hours" step="any" min="0" value="<?= htmlspecialchars((string) ($editModule['hours'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" required></label>
+          <label>Tipo de cobro
+            <select name="billing_type">
+              <option value="once" <?= (($editModule['billing_type'] ?? 'once') === 'once') ? 'selected' : '' ?>>Costo único</option>
+              <option value="monthly" <?= (($editModule['billing_type'] ?? '') === 'monthly') ? 'selected' : '' ?>>Mensual</option>
+            </select>
+          </label>
+        </div>
+        <div class="admin-calc">
+          <span class="admin-calc__label">Precio calculado</span>
+          <strong class="admin-calc__value" id="module-price-preview">—</strong>
+          <span class="admin-calc__formula">valor hora × horas</span>
+        </div>
         <label>Plazo de entrega <input type="text" name="delivery_estimate" value="<?= htmlspecialchars($editModule['delivery_estimate'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="2-3 semanas"></label>
-        <label>Nota opcional <textarea name="notes" rows="2"><?= htmlspecialchars($editModule['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
-        <label>Costo externo opcional <textarea name="external_cost_note" rows="2"><?= htmlspecialchars($editModule['external_cost_note'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
-        <label class="admin-check"><input type="checkbox" name="is_locked" <?= !empty($editModule['is_locked']) ? 'checked' : '' ?>> Obligatorio (el cliente no lo puede destildar)</label>
-        <label class="admin-check"><input type="checkbox" name="default_checked" <?= ($editModule === null || !empty($editModule['default_checked'])) ? 'checked' : '' ?>> Tildado por defecto</label>
+        <div class="admin-cols">
+          <label>Nota opcional <textarea name="notes" rows="2"><?= htmlspecialchars($editModule['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
+          <label>Costo externo opcional <textarea name="external_cost_note" rows="2"><?= htmlspecialchars($editModule['external_cost_note'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
+        </div>
+        <div class="admin-cols admin-check-row">
+          <label class="admin-check"><input type="checkbox" name="is_locked" <?= !empty($editModule['is_locked']) ? 'checked' : '' ?>> Obligatorio (el cliente no lo puede destildar)</label>
+          <label class="admin-check"><input type="checkbox" name="default_checked" <?= ($editModule === null || !empty($editModule['default_checked'])) ? 'checked' : '' ?>> Tildado por defecto</label>
+        </div>
 
         <div class="admin-form__actions">
           <button type="submit" class="btn btn--ghost"><?= $editModule ? 'Guardar cambios' : 'Agregar módulo' ?></button>
@@ -315,20 +332,20 @@ require __DIR__ . '/inc/header.php';
       <div class="admin-table-wrap">
       <table class="admin-table">
         <thead>
-          <tr><th>#</th><th>Nombre</th><th>Categoría</th><th>Horas</th><th>Precio</th><th>Cobro</th><th>Obligatorio</th><th><span class="admin-sr-only">Acciones</span></th></tr>
+          <tr><th class="admin-cell-idx">#</th><th>Nombre</th><th>Categoría</th><th class="admin-num">Horas</th><th class="admin-num">Precio</th><th>Cobro</th><th>Obligatorio</th><th class="admin-num"><span class="admin-sr-only">Acciones</span></th></tr>
         </thead>
         <tbody>
           <?php foreach ($modules as $m): ?>
             <tr>
-              <td><?= (int) $m['module_number'] ?></td>
-              <td><?= htmlspecialchars($m['name'], ENT_QUOTES, 'UTF-8') ?></td>
-              <td><?= htmlspecialchars($m['category'], ENT_QUOTES, 'UTF-8') ?></td>
-              <td><?= $m['hours'] !== null ? htmlspecialchars(rtrim(rtrim(number_format((float) $m['hours'], 2, '.', ''), '0'), '.') . ' h', ENT_QUOTES, 'UTF-8') : '—' ?></td>
-              <td><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $m['price_min'], 0, ',', '.') . (($m['price_min'] != $m['price_max']) ? ' – ' . number_format((float) $m['price_max'], 0, ',', '.') : ''), ENT_QUOTES, 'UTF-8') ?></td>
-              <td><?= $m['billing_type'] === 'monthly' ? 'Mensual' : 'Único' ?></td>
-              <td><?= $m['is_locked'] ? 'Sí' : 'No' ?></td>
+              <td class="admin-cell-idx"><span class="admin-idx"><?= (int) $m['module_number'] ?></span></td>
+              <td class="admin-cell-name"><?= htmlspecialchars($m['name'], ENT_QUOTES, 'UTF-8') ?></td>
+              <td class="admin-cell-cat"><?= htmlspecialchars($m['category'], ENT_QUOTES, 'UTF-8') ?></td>
+              <td class="admin-num"><?= $m['hours'] !== null ? htmlspecialchars(rtrim(rtrim(number_format((float) $m['hours'], 2, '.', ''), '0'), '.') . ' h', ENT_QUOTES, 'UTF-8') : '—' ?></td>
+              <td class="admin-num"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $m['price_min'], 0, ',', '.') . (($m['price_min'] != $m['price_max']) ? ' – ' . number_format((float) $m['price_max'], 0, ',', '.') : ''), ENT_QUOTES, 'UTF-8') ?></td>
+              <td><span class="admin-tag <?= $m['billing_type'] === 'monthly' ? 'admin-tag--monthly' : '' ?>"><?= $m['billing_type'] === 'monthly' ? 'Mensual' : 'Único' ?></span></td>
+              <td><span class="admin-tag <?= $m['is_locked'] ? 'admin-tag--yes' : 'admin-tag--no' ?>"><?= $m['is_locked'] ? 'Sí' : 'No' ?></span></td>
               <td class="admin-table__actions">
-                <a href="/admin/propuesta-editor.php?id=<?= $proposalId ?>&edit_module=<?= (int) $m['id'] ?>">Editar</a>
+                <a class="admin-table__edit" href="/admin/propuesta-editor.php?id=<?= $proposalId ?>&edit_module=<?= (int) $m['id'] ?>">Editar</a>
                 <form method="POST" onsubmit="return confirm('¿Eliminar este módulo?');">
                   <?= csrf_field() ?>
                   <input type="hidden" name="action" value="delete_module">
@@ -379,7 +396,10 @@ require __DIR__ . '/inc/header.php';
 
   <section class="admin-section">
     <h2>Vista previa — así la ve el cliente</h2>
-    <div id="proposal-app"></div>
+    <div class="admin-preview-frame">
+      <div class="admin-preview-frame__bar"><span class="admin-preview-frame__dot"></span> Vista del cliente</div>
+      <div id="proposal-app"></div>
+    </div>
   </section>
 </main>
 

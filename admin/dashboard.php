@@ -126,10 +126,12 @@ require __DIR__ . '/inc/header.php';
     <form method="POST" class="admin-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create_client">
-      <label>Nombre <input type="text" name="name" required></label>
-      <label>Empresa <input type="text" name="company"></label>
-      <label>Email <input type="email" name="email" required></label>
-      <label>WhatsApp <input type="text" name="whatsapp" placeholder="5491178221468"></label>
+      <div class="admin-cols">
+        <label>Nombre <input type="text" name="name" required></label>
+        <label>Empresa <input type="text" name="company"></label>
+        <label>Email <input type="email" name="email" required></label>
+        <label>WhatsApp <input type="text" name="whatsapp" placeholder="5491178221468"></label>
+      </div>
       <button type="submit" class="btn btn--ghost">Crear cliente</button>
     </form>
   </details>
@@ -140,21 +142,25 @@ require __DIR__ . '/inc/header.php';
 
   <?php foreach ($clients as $client): ?>
     <section class="admin-client">
-      <h2><?= htmlspecialchars($client['name'], ENT_QUOTES, 'UTF-8') ?>
-        <?php if ($client['company']): ?><span class="admin-muted">— <?= htmlspecialchars($client['company'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
-      </h2>
-      <p class="admin-muted"><?= htmlspecialchars($client['email'], ENT_QUOTES, 'UTF-8') ?><?= $client['whatsapp'] ? ' · ' . htmlspecialchars($client['whatsapp'], ENT_QUOTES, 'UTF-8') : '' ?></p>
+      <div class="admin-client__head">
+        <h2><?= htmlspecialchars($client['name'], ENT_QUOTES, 'UTF-8') ?>
+          <?php if ($client['company']): ?><span class="admin-muted">— <?= htmlspecialchars($client['company'], ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+        </h2>
+        <p class="admin-muted admin-client__meta"><?= htmlspecialchars($client['email'], ENT_QUOTES, 'UTF-8') ?><?= $client['whatsapp'] ? ' · ' . htmlspecialchars($client['whatsapp'], ENT_QUOTES, 'UTF-8') : '' ?></p>
+      </div>
 
-      <details class="admin-form-wrap admin-form-wrap--tight">
+      <details class="admin-form-wrap admin-form-wrap--tight admin-form-wrap--sub">
         <summary>Editar / eliminar cliente</summary>
         <form method="POST" class="admin-form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="update_client">
           <input type="hidden" name="client_id" value="<?= (int) $client['id'] ?>">
-          <label>Nombre <input type="text" name="name" value="<?= htmlspecialchars($client['name'], ENT_QUOTES, 'UTF-8') ?>" required></label>
-          <label>Empresa <input type="text" name="company" value="<?= htmlspecialchars((string) ($client['company'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"></label>
-          <label>Email <input type="email" name="email" value="<?= htmlspecialchars($client['email'], ENT_QUOTES, 'UTF-8') ?>" required></label>
-          <label>WhatsApp <input type="text" name="whatsapp" value="<?= htmlspecialchars((string) ($client['whatsapp'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="5491178221468"></label>
+          <div class="admin-cols">
+            <label>Nombre <input type="text" name="name" value="<?= htmlspecialchars($client['name'], ENT_QUOTES, 'UTF-8') ?>" required></label>
+            <label>Empresa <input type="text" name="company" value="<?= htmlspecialchars((string) ($client['company'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"></label>
+            <label>Email <input type="email" name="email" value="<?= htmlspecialchars($client['email'], ENT_QUOTES, 'UTF-8') ?>" required></label>
+            <label>WhatsApp <input type="text" name="whatsapp" value="<?= htmlspecialchars((string) ($client['whatsapp'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="5491178221468"></label>
+          </div>
           <button type="submit" class="btn btn--ghost">Guardar cambios</button>
         </form>
         <form method="POST" class="admin-client__delete" onsubmit="return confirm('¿Eliminar este cliente y TODOS sus proyectos, propuestas y accesos? Esta acción no se puede deshacer.');">
@@ -205,6 +211,7 @@ require __DIR__ . '/inc/header.php';
                 </span>
               </li>
             <?php endforeach; ?>
+            <?php if (!$project['proposals']): ?><li class="admin-empty">Sin propuestas todavía. Creá la primera abajo.</li><?php endif; ?>
           </ul>
 
           <details class="admin-form-wrap admin-form-wrap--tight">
