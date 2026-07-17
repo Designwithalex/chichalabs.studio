@@ -1,0 +1,884 @@
+/* ============================================================
+   ChichaLabs Studio — Case Study Pages
+   Estilos para páginas individuales de casos de estudio
+   ============================================================ */
+
+/* Variables de tema por proyecto (sobreescritas en JS al montar) */
+:root {
+  --cs-accent:      #00BF63;
+  --cs-accent-dark: #008040;
+  --cs-bg-dark:     #080808;
+  --cs-text-dark:   #F0F0F0;
+}
+
+/* ============================================================
+   RESET CASE STUDY BODY
+   ============================================================ */
+.cs-body {
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   NAV CASE STUDY — minimal back nav
+   ============================================================ */
+.cs-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 2rem;
+  background: rgba(247, 247, 247, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(11,11,11,0.08);
+  transition: border-color 0.2s;
+}
+
+.cs-nav--scrolled { border-bottom-color: var(--cs-accent); }
+
+.cs-nav__back {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(11,11,11,0.45);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.cs-nav__back:hover { color: var(--cs-accent); }
+
+.cs-nav__back svg { width: 16px; height: 16px; }
+
+.cs-nav__brand {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--cs-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cs-nav__cta {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--black);
+  border: 1.5px solid var(--cs-accent);
+  padding: 0.5rem 1.25rem;
+  border-radius: 3px;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.cs-nav__cta:hover { background: var(--cs-accent); color: #fff; }
+
+@media (min-width: 900px) { .cs-nav { padding: 1.25rem 3rem; } }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.cs-hero {
+  min-height: 100svh;
+  background: var(--cs-bg-dark);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8rem 0 5rem;
+  overflow: hidden;
+}
+
+/* Pattern de fondo por tipo de proyecto */
+.cs-hero__pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Architecture pattern: grid fino */
+[data-theme="architecture"] .cs-hero__pattern {
+  background-image:
+    linear-gradient(rgba(196,168,130,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196,168,130,0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Agritech: grid de campo */
+[data-theme="agritech"] .cs-hero__pattern {
+  background-image:
+    radial-gradient(circle, rgba(64,192,116,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Food brand: líneas orgánicas */
+[data-theme="food-brand"] .cs-hero__pattern {
+  background: repeating-linear-gradient(
+    -55deg,
+    transparent,
+    transparent 20px,
+    rgba(196,69,48,0.05) 20px,
+    rgba(196,69,48,0.05) 21px
+  );
+}
+
+/* B2B / corporate: diagonal */
+[data-theme="b2b"] .cs-hero__pattern {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 30px,
+    rgba(10,122,255,0.05) 30px,
+    rgba(10,122,255,0.05) 31px
+  );
+}
+
+/* Brand / snack: random dots */
+[data-theme="brand"] .cs-hero__pattern {
+  background-image: radial-gradient(circle, rgba(230,48,48,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Coffee: radial warm gradient */
+[data-theme="coffee"] .cs-hero__pattern {
+  background: radial-gradient(ellipse 60% 60% at 80% 30%, rgba(200,134,58,0.12) 0%, transparent 70%);
+}
+
+/* Health: horizontal lines + clean */
+[data-theme="health"] .cs-hero__pattern {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 40px,
+    rgba(76,175,80,0.06) 40px,
+    rgba(76,175,80,0.06) 41px
+  );
+}
+
+/* Automotive: angular lines */
+[data-theme="automotive"] .cs-hero__pattern {
+  background: repeating-linear-gradient(
+    -65deg,
+    transparent,
+    transparent 50px,
+    rgba(184,150,94,0.07) 50px,
+    rgba(184,150,94,0.07) 51px
+  );
+}
+
+/* Cultural: scattered elements */
+[data-theme="cultural"] .cs-hero__pattern {
+  background-image:
+    radial-gradient(circle, rgba(255,107,53,0.12) 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(255,107,53,0.05) 3px, transparent 3px);
+  background-size: 48px 48px, 96px 96px;
+  background-position: 0 0, 24px 24px;
+}
+
+/* Portfolio: monochrome grid */
+[data-theme="portfolio"] .cs-hero__pattern {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Imagen hero (overlay) */
+.cs-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.cs-hero__img.is-loaded { opacity: 0.35; }
+
+.cs-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--cs-bg-dark) 30%, transparent 100%);
+  z-index: 2;
+}
+
+.cs-hero__content {
+  position: relative;
+  z-index: 3;
+}
+
+.cs-hero__eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--cs-accent);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cs-hero__eyebrow::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--cs-accent);
+  flex-shrink: 0;
+}
+
+.cs-hero__client {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 10rem);
+  color: var(--cs-text-dark, #F0F0F0);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  margin-bottom: 1.75rem;
+}
+
+.cs-hero__title {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 400;
+  color: rgba(240,240,240,0.55);
+  max-width: 52ch;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.cs-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cs-hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cs-hero__tag {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cs-accent);
+  border: 1px solid var(--cs-accent);
+  padding: 0.25rem 0.65rem;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.cs-hero__url {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(240,240,240,0.35);
+  transition: color 0.2s;
+  margin-left: auto;
+}
+
+.cs-hero__url:hover { color: var(--cs-accent); }
+
+/* ============================================================
+   SECCIONES INTERNAS
+   ============================================================ */
+.cs-section {
+  padding: 7rem 0;
+  border-bottom: 1px solid rgba(11,11,11,0.08);
+}
+
+.cs-section:last-of-type { border-bottom: none; }
+
+.cs-section--tinted { background: var(--tinted); }
+
+.cs-section__label {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--cs-accent);
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cs-section__label::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--cs-accent);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   OVERVIEW — split layout
+   ============================================================ */
+.cs-overview {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 860px) {
+  .cs-overview {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 6rem;
+    align-items: start;
+  }
+}
+
+.cs-overview__text {
+  font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+  line-height: 1.75;
+  color: rgba(11,11,11,0.75);
+  max-width: 60ch;
+}
+
+.cs-overview__text strong { color: var(--black); font-weight: 700; }
+
+.cs-overview__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(11,11,11,0.1);
+}
+
+.cs-meta-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(11,11,11,0.08);
+}
+
+.cs-meta-item__label {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(11,11,11,0.35);
+}
+
+.cs-meta-item__value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--black);
+  line-height: 1.5;
+}
+
+.cs-meta-item__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.cs-meta-item__tool {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(11,11,11,0.5);
+  border: 1px solid rgba(11,11,11,0.12);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   PROBLEM / CONSTRAINTS — dark card
+   ============================================================ */
+.cs-problem {
+  background: var(--cs-bg-dark);
+  border-radius: 8px;
+  padding: 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cs-problem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--cs-accent);
+}
+
+@media (min-width: 860px) {
+  .cs-problem { grid-template-columns: 1fr 1fr; gap: 4rem; }
+}
+
+.cs-problem__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #F0F0F0;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.cs-problem__text {
+  font-size: 0.95rem;
+  color: rgba(240,240,240,0.6);
+  line-height: 1.75;
+  max-width: 50ch;
+}
+
+.cs-problem__text strong { color: rgba(240,240,240,0.9); }
+
+/* ============================================================
+   SOLUTION ITEMS
+   ============================================================ */
+.cs-solution {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) { .cs-solution { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .cs-solution { grid-template-columns: repeat(2, 1fr); } }
+
+.cs-solution__intro {
+  grid-column: 1 / -1;
+  font-size: 1rem;
+  color: rgba(11,11,11,0.55);
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
+.cs-solution-item {
+  border: 1px solid rgba(11,11,11,0.1);
+  border-radius: 4px;
+  padding: 1.75rem;
+  border-top: 2px solid var(--cs-accent);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cs-solution-item:hover {
+  border-color: var(--cs-accent);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.cs-solution-item__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.75rem;
+  color: var(--black);
+}
+
+.cs-solution-item__desc {
+  font-size: 0.9rem;
+  color: rgba(11,11,11,0.6);
+  line-height: 1.65;
+}
+
+/* ============================================================
+   PROCESS STEPS
+   ============================================================ */
+.cs-process {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(11,11,11,0.1);
+}
+
+.cs-process-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2rem;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid rgba(11,11,11,0.08);
+  align-items: start;
+}
+
+.cs-process-step__num {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--cs-accent);
+  line-height: 1;
+  opacity: 0.4;
+  min-width: 3ch;
+  transition: opacity 0.2s;
+}
+
+.cs-process-step:hover .cs-process-step__num { opacity: 1; }
+
+.cs-process-step__content h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.cs-process-step__content p {
+  font-size: 0.9rem;
+  color: rgba(11,11,11,0.6);
+  line-height: 1.7;
+  max-width: 58ch;
+}
+
+/* ============================================================
+   GALLERY DE IMÁGENES
+   ============================================================ */
+.cs-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cs-gallery { grid-template-columns: repeat(2, 1fr); }
+  .cs-gallery__item:first-child { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+  .cs-gallery { grid-template-columns: repeat(3, 1fr); }
+  .cs-gallery__item:first-child { grid-column: 1 / 3; }
+}
+
+.cs-gallery__item {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(11,11,11,0.06);
+  position: relative;
+}
+
+.cs-gallery__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s;
+}
+
+.cs-gallery__item:hover img { transform: scale(1.03); }
+
+.cs-gallery__item { cursor: zoom-in; }
+.cs-gallery__item:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+
+/* Placeholder si no hay imagen */
+.cs-gallery__placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--cs-bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  color: rgba(255,255,255,0.06);
+  position: relative;
+}
+
+.cs-gallery__placeholder::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.18);
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+.cs-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) { .cs-results { grid-template-columns: repeat(2, 1fr); } }
+
+.cs-result-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--tinted);
+  border-radius: 4px;
+  border-left: 3px solid var(--cs-accent);
+}
+
+.cs-result-item__icon {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--cs-accent);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cs-result-item__text {
+  font-size: 0.9rem;
+  color: rgba(11,11,11,0.7);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   CONCLUSION
+   ============================================================ */
+.cs-conclusion {
+  max-width: 72ch;
+}
+
+.cs-conclusion__text {
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+  color: rgba(11,11,11,0.65);
+  line-height: 1.8;
+  font-style: italic;
+}
+
+/* ============================================================
+   CTA BOTTOM
+   ============================================================ */
+.cs-cta {
+  background: var(--cs-bg-dark);
+  padding: 7rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.cs-cta__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.cs-cta__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  color: rgba(240,240,240,0.9);
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.cs-cta__sub {
+  font-size: 1rem;
+  color: rgba(240,240,240,0.45);
+  max-width: 48ch;
+  line-height: 1.7;
+}
+
+.cs-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.cs-cta .btn--ghost {
+  border-color: var(--cs-accent);
+  color: #F0F0F0;
+}
+
+.cs-cta .btn--ghost::before { background: var(--cs-accent); }
+.cs-cta .btn--ghost:hover::before { transform: translateX(0); }
+.cs-cta .btn--ghost:hover { color: #000; }
+
+.cs-cta .btn--text { color: rgba(240,240,240,0.45); }
+.cs-cta .btn--text:hover { color: var(--cs-accent); }
+
+/* Navigation entre casos al fondo */
+.cs-case-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(11,11,11,0.08);
+  border-top: 1px solid rgba(11,11,11,0.08);
+}
+
+.cs-case-nav__item {
+  padding: 2.5rem 2rem;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: background 0.2s;
+}
+
+.cs-case-nav__item:hover { background: var(--tinted); }
+
+.cs-case-nav__item--next { text-align: right; }
+
+.cs-case-nav__dir {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(11,11,11,0.3);
+}
+
+.cs-case-nav__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: var(--black);
+}
+
+/* ============================================================
+   LOADER SKELETON
+   ============================================================ */
+.cs-skeleton {
+  background: linear-gradient(90deg,
+    rgba(11,11,11,0.06) 25%,
+    rgba(11,11,11,0.10) 37%,
+    rgba(11,11,11,0.06) 63%
+  );
+  background-size: 400px 100%;
+  animation: cs-shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}
+
+@keyframes cs-shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position: 400px 0; }
+}
+
+/* ============================================================
+   ERROR STATE
+   ============================================================ */
+.cs-error {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.cs-error__code {
+  font-family: var(--font-display);
+  font-size: 8rem;
+  color: rgba(11,11,11,0.08);
+  line-height: 1;
+}
+
+.cs-error__title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   LIGHTBOX — vista completa de imagen de galería
+   ============================================================ */
+.cs-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  background: rgba(8,8,8,0.94);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s, visibility 0.25s;
+}
+
+.cs-lightbox.is-open { opacity: 1; visibility: visible; }
+
+.cs-lightbox__img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  transform: scale(0.97);
+  transition: transform 0.25s;
+}
+
+.cs-lightbox.is-open .cs-lightbox__img { transform: scale(1); }
+
+.cs-lightbox__close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.cs-lightbox__close:hover { border-color: var(--cs-accent, var(--green)); background: rgba(255,255,255,0.06); }
+.cs-lightbox__close svg { width: 18px; height: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-lightbox, .cs-lightbox__img { transition: none; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (min-width: 900px) {
+  .cs-section { padding: 9rem 0; }
+}
+
+@media (max-width: 480px) {
+  .cs-hero { padding: 7rem 0 4rem; }
+  .cs-hero__client { font-size: clamp(3rem, 15vw, 6rem); }
+  .cs-problem { padding: 2rem; }
+}
+
+/* ============================================================
+   PREFERS-REDUCED-MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .cs-hero__img { transition: none; }
+  .cs-gallery__item img { transition: none; }
+  .cs-skeleton { animation: none; background: rgba(11,11,11,0.06); }
+}

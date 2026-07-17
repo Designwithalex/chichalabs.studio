@@ -1,0 +1,169 @@
+/* ============================================================
+   ChichaLabs Studio — Proposal Calculator (compartido portal/admin)
+   Depende de los tokens de :root definidos en css/styles.css
+   ============================================================ */
+
+.pc-categories { display: flex; flex-direction: column; gap: 2.5rem; margin-bottom: 2.5rem; }
+
+.pc-category__title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  color: var(--black);
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pc-module {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(11,11,11,0.1);
+  cursor: pointer;
+}
+
+.pc-module:last-child { border-bottom: none; }
+
+.pc-module__checkbox {
+  margin-top: 0.3rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--green);
+  flex-shrink: 0;
+}
+
+.pc-module--locked { cursor: default; }
+.pc-module--locked .pc-module__checkbox { cursor: not-allowed; }
+
+.pc-module__body { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.pc-module__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1rem;
+}
+
+.pc-module__num {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.pc-module__name { font-weight: 700; font-size: 1.05rem; }
+
+.pc-module__price {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.pc-module__bullets { margin: 0; padding-left: 1.1rem; color: rgba(11,11,11,0.7); font-size: 0.92rem; }
+.pc-module__bullets li { margin-bottom: 0.2rem; }
+
+.pc-module__delivery { font-size: 0.85rem; color: rgba(11,11,11,0.55); margin: 0; }
+.pc-module__notes { font-size: 0.85rem; color: rgba(11,11,11,0.55); margin: 0; font-style: italic; }
+
+.pc-module__external {
+  font-size: 0.85rem;
+  color: var(--black);
+  background: rgba(0,191,99,0.08);
+  border-left: 3px solid var(--green);
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0 0;
+}
+
+/* --- Totales --- */
+.pc-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: var(--tinted);
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.pc-totals__row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.pc-totals__row:empty { display: none; }
+
+.pc-totals__label { font-size: 0.85rem; color: rgba(11,11,11,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
+.pc-totals__value { font-family: var(--font-display); font-size: 1.6rem; color: var(--black); }
+
+/* --- Condiciones --- */
+.pc-conditions {
+  font-size: 0.9rem;
+  color: rgba(11,11,11,0.7);
+  margin-bottom: 2rem;
+}
+.pc-conditions p { margin: 0 0 0.5rem; }
+
+/* --- CTA --- */
+.pc-cta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+.pc-cta--expired {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(191,0,0,0.06);
+  border-left: 3px solid #BF0000;
+  border-radius: 4px;
+}
+
+.pc-cta__expired-msg { margin: 0; font-weight: 700; }
+
+.pc-cta--preview .pc-cta__badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1rem;
+  border: 2px dashed rgba(11,11,11,0.25);
+  border-radius: 4px;
+  color: rgba(11,11,11,0.55);
+}
+
+/* --- Modal de confirmación --- */
+.pc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(11,11,11,0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-fast) var(--ease), visibility 0s linear var(--t-fast);
+}
+
+.pc-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--t-fast) var(--ease), visibility 0s;
+}
+
+.pc-modal__panel {
+  background: var(--bg);
+  border: 2px solid var(--green);
+  border-radius: 6px;
+  padding: 2rem;
+  max-width: 26rem;
+  width: 100%;
+}
+
+.pc-modal__title { font-family: var(--font-display); font-size: 1.5rem; text-transform: uppercase; margin: 0 0 0.75rem; }
+.pc-modal__body { color: rgba(11,11,11,0.7); margin: 0 0 1.5rem; }
+.pc-modal__actions { display: flex; justify-content: flex-end; gap: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-modal { transition: none; }
+}

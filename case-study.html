@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Caso de estudio — ChichaLabs Studio</title>
+  <meta name="description" id="page-desc" content="Caso de estudio ChichaLabs Studio">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/case-study.css">
+</head>
+<body class="cs-body">
+
+  <!-- NAV -->
+  <nav class="cs-nav" id="cs-nav" role="navigation" aria-label="Navegación">
+    <a href="index.html#casos" class="cs-nav__back">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Casos
+    </a>
+    <a href="index.html" class="cs-nav__brand">[ CL ]</a>
+    <a href="https://wa.me/5491178221468?text=Hola%2C%20quiero%20hacer%20un%20diagn%C3%B3stico%20tecnol%C3%B3gico."
+       class="cs-nav__cta" target="_blank" rel="noopener noreferrer">
+      Contacto
+    </a>
+  </nav>
+
+  <!-- Contenido principal — renderizado por JS -->
+  <main id="cs-main">
+
+    <!-- Estado inicial: loading skeleton -->
+    <div id="cs-loading" style="min-height:100svh;background:#0A0A0A;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;gap:1rem;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:120px;height:4px;border-radius:2px;" class="cs-skeleton"></div>
+        <div style="width:240px;height:4px;border-radius:2px;" class="cs-skeleton"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Lightbox: vista completa de imagen de galería -->
+  <div class="cs-lightbox" id="cs-lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button type="button" class="cs-lightbox__close" id="cs-lightbox-close" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <img class="cs-lightbox__img" id="cs-lightbox-img" src="" alt="">
+  </div>
+
+  <script src="js/case-studies-data.js"></script>
+  <script src="js/case-study.js"></script>
+</body>
+</html>

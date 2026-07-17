@@ -1,0 +1,11 @@
+# No servir los .sql en crudo (no es problema que seed-admin.php se sirva:
+# ese SI se necesita accesible por navegador para su uso de una sola vez).
+<FilesMatch "\.sql$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

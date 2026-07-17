@@ -1,0 +1,3 @@
+# Secrets — never commit
+.deploy.env
+config/config.php

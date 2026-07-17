@@ -1,0 +1,39 @@
+<?php
+/**
+ * Copiar este archivo a config.php y completar con los datos reales.
+ * config.php NUNCA se commitea (ver .gitignore) — solo vive en el servidor.
+ */
+declare(strict_types=1);
+
+// --- MySQL (hPanel → Bases de datos → MySQL) ---
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'u000000000_chichalabs');
+define('DB_USER', 'u000000000_usuario');
+define('DB_PASS', 'CAMBIAR_ESTO');
+
+// --- SMTP (hPanel → Correos → cuenta de correo del dominio) ---
+define('SMTP_HOST', 'smtp.hostinger.com');
+define('SMTP_PORT', 465); // 465 = SMTPS implícito, 587 = STARTTLS
+define('SMTP_USER', 'notificaciones@chichalabs.studio');
+define('SMTP_PASS', 'CAMBIAR_ESTO');
+define('SMTP_FROM_NAME', 'ChichaLabs Studio');
+
+// --- URLs base (sin barra final) ---
+define('SITE_BASE_URL', 'https://chichalabs.studio');
+define('PORTAL_BASE_URL', 'https://chichalabs.studio/portal');
+define('ADMIN_BASE_URL', 'https://chichalabs.studio/admin');
+
+// --- n8n (opcional) — dejar vacío para desactivar la notificación ---
+define('N8N_PROPOSAL_ACCEPTED_WEBHOOK', '');
+
+// --- Entorno ---
+// 'local' muestra errores detallados; cualquier otro valor los oculta (producción).
+define('APP_ENV', 'production');
+
+if (APP_ENV === 'local') {
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', '0');
+    error_reporting(E_ALL);
+}
