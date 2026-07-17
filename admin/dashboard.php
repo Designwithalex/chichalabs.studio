@@ -88,6 +88,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->rollBack();
             }
         }
+    } elseif ($action === 'delete_proposal') {
+        $id = (int) ($_POST['proposal_id'] ?? 0);
+        if ($id > 0) {
+            /* Misma cascada manual que el cliente, pero acotada a una propuesta:
+               borrar notas y módulos antes que la propuesta (FK RESTRICT). */
+            try {
+                $pdo->beginTransaction();
+                $pdo->prepare('DELETE FROM proposal_internal_notes WHERE proposal_id = ?')->execute([$id]);
+                $pdo->prepare('DELETE FROM proposal_modules WHERE proposal_id = ?')->execute([$id]);
+                $pdo->prepare('DELETE FROM proposals WHERE id = ?')->execute([$id]);
+                $pdo->commit();
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+            }
+        }
     }
 
     header('Location: /admin/dashboard.php');
@@ -209,6 +224,12 @@ require __DIR__ . '/inc/header.php';
                 <span class="admin-badge admin-badge--<?= htmlspecialchars($proposal['status'], ENT_QUOTES, 'UTF-8') ?>">
                   <?= htmlspecialchars(PROPOSAL_STATUS_LABELS[$proposal['status']] ?? $proposal['status'], ENT_QUOTES, 'UTF-8') ?>
                 </span>
+                <form method="POST" class="admin-proposal-list__delete" onsubmit="return confirm('¿Eliminar la propuesta «<?= htmlspecialchars(addslashes($proposal['title']), ENT_QUOTES, 'UTF-8') ?>» y todos sus módulos y notas? Esta acción no se puede deshacer.');">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="delete_proposal">
+                  <input type="hidden" name="proposal_id" value="<?= (int) $proposal['id'] ?>">
+                  <button type="submit" class="admin-link-btn admin-link-btn--danger">Eliminar</button>
+                </form>
               </li>
             <?php endforeach; ?>
             <?php if (!$project['proposals']): ?><li class="admin-empty">Sin propuestas todavía. Creá la primera abajo.</li><?php endif; ?>

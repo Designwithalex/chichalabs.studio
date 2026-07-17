@@ -401,6 +401,17 @@ require __DIR__ . '/inc/header.php';
       <div id="proposal-app"></div>
     </div>
   </section>
+
+  <section class="admin-section admin-danger-zone">
+    <h2>Eliminar propuesta</h2>
+    <p class="admin-muted">Se borran la propuesta y todos sus módulos y notas. Esta acción no se puede deshacer.</p>
+    <form method="POST" action="/admin/dashboard.php" onsubmit="return confirm('¿Eliminar la propuesta «<?= htmlspecialchars(addslashes($proposal['title']), ENT_QUOTES, 'UTF-8') ?>» y todos sus módulos y notas? Esta acción no se puede deshacer.');">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="delete_proposal">
+      <input type="hidden" name="proposal_id" value="<?= $proposalId ?>">
+      <button type="submit" class="admin-btn-danger">Eliminar propuesta</button>
+    </form>
+  </section>
 </main>
 
 <script>
