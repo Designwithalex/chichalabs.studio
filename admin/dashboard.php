@@ -114,7 +114,12 @@ $pageTitle = 'Dashboard';
 require __DIR__ . '/inc/header.php';
 ?>
 <main class="container admin-dashboard">
-  <h1>Clientes</h1>
+  <div class="admin-page-head">
+    <div>
+      <h1>Clientes</h1>
+      <p class="admin-muted"><?= count($clients) ?> <?= count($clients) === 1 ? 'cliente cargado' : 'clientes cargados' ?></p>
+    </div>
+  </div>
 
   <details class="admin-form-wrap">
     <summary>+ Nuevo cliente</summary>

@@ -309,9 +309,13 @@ require __DIR__ . '/inc/header.php';
 
     <section class="admin-section">
       <h2>Módulos (<?= count($modules) ?>)</h2>
+      <?php if (!$modules): ?>
+        <p class="admin-empty">Todavía no hay módulos. Agregá el primero con el formulario de arriba.</p>
+      <?php else: ?>
+      <div class="admin-table-wrap">
       <table class="admin-table">
         <thead>
-          <tr><th>#</th><th>Nombre</th><th>Categoría</th><th>Horas</th><th>Precio</th><th>Cobro</th><th>Obligatorio</th><th></th></tr>
+          <tr><th>#</th><th>Nombre</th><th>Categoría</th><th>Horas</th><th>Precio</th><th>Cobro</th><th>Obligatorio</th><th><span class="admin-sr-only">Acciones</span></th></tr>
         </thead>
         <tbody>
           <?php foreach ($modules as $m): ?>
@@ -336,6 +340,8 @@ require __DIR__ . '/inc/header.php';
           <?php endforeach; ?>
         </tbody>
       </table>
+      </div>
+      <?php endif; ?>
     </section>
 
     <section class="admin-section">
