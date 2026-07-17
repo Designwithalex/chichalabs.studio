@@ -224,7 +224,10 @@ require __DIR__ . '/inc/header.php';
       <div class="admin-panel__row">
         <div class="admin-panel__link">
           <span class="admin-panel__link-label">Link para el cliente</span>
-          <a class="admin-linkbox" href="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?></a>
+          <div class="admin-linkbox-row">
+            <a class="admin-linkbox" href="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?></a>
+            <button type="button" class="btn btn--ghost admin-copy-link" data-copy="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>">Copiar link</button>
+          </div>
         </div>
         <?php if ($proposal['status'] === 'borrador'): ?>
           <form method="POST">
@@ -417,6 +420,35 @@ require __DIR__ . '/inc/header.php';
 <script>
   window.MODULES = <?= json_encode($jsModules, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
   window.PROPOSAL_META = <?= json_encode($jsMeta, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+</script>
+<script>
+(function () {
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(true); } catch (e) { done(false); }
+    document.body.removeChild(ta);
+  }
+  document.querySelectorAll('.admin-copy-link').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var url = btn.getAttribute('data-copy') || '';
+      var flash = function (ok) {
+        var prev = btn.getAttribute('data-label') || btn.textContent;
+        btn.setAttribute('data-label', prev);
+        btn.textContent = ok ? '¡Copiado!' : 'Copiá manualmente';
+        btn.classList.toggle('is-copied', ok);
+        setTimeout(function () { btn.textContent = prev; btn.classList.remove('is-copied'); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { flash(true); }, function () { fallbackCopy(url, flash); });
+      } else {
+        fallbackCopy(url, flash);
+      }
+    });
+  });
+})();
 </script>
 <script src="/admin/js/proposal-calculator.js"></script>
 <?php require __DIR__ . '/inc/footer.php'; ?>

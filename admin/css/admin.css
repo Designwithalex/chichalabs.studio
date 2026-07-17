@@ -706,6 +706,10 @@
   transition: border-color var(--ad-t) var(--ad-ease), background var(--ad-t) var(--ad-ease);
 }
 .admin-linkbox:hover { border-color: var(--ad-primary-line); background: var(--ad-surface); }
+.admin-linkbox-row { display: flex; align-items: center; gap: var(--ad-s-3); flex-wrap: wrap; }
+.admin-linkbox-row .admin-linkbox { flex: 1 1 auto; min-width: 0; }
+.admin-copy-link { flex-shrink: 0; white-space: nowrap; }
+.admin-copy-link.is-copied { color: #fff; background: var(--ad-primary); border-color: var(--ad-primary); }
 
 .admin-panel--accepted { border-color: var(--ad-primary-line); background: var(--ad-primary-wash); }
 .admin-panel--accepted p strong { color: var(--ad-primary); }
