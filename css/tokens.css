@@ -1,0 +1,140 @@
+/* ============================================================================
+   ChichaLabs Studio — DARK PREMIUM DESIGN SYSTEM  (tokens.css)
+   Shared source of truth for the 3 surfaces:
+     · Landing  → css/styles.css
+     · Admin    → admin/css/admin.css   (layers --ad-* on top)
+     · Portal   → portal/css/portal.css (layers --pt-* on top)
+
+   Reference language: Linear · Vercel · Stripe · Apple.
+   Load order per surface:  tokens.css  →  surface stylesheet.
+
+   ─────────────────────────────────────────────────────────────────────────
+   HOW TO USE
+   · Never hard-code a hex/px in a component. Reference a token.
+   · Backgrounds go DARK → LIGHT by elevation: --bg < --surface-1 < --surface-2 < --surface-3.
+   · Text goes LIGHT → DARK by importance: --ink (titles) > --ink-2 (body) > --ink-3 (muted).
+   · Green is the ONLY saturated color. Reserve it for CTAs, active states, focus,
+     data-viz accents and hairline glows — never for large fills of body text.
+   ============================================================================ */
+
+:root {
+  /* ── COLOR · surfaces (near-black, layered, never pure #000 → avoids OLED smear) ── */
+  --bg:            #0A0A0B;   /* page base */
+  --bg-2:          #0B0C0E;   /* alternating section band */
+  --surface-1:     #111214;   /* cards, nav, inputs */
+  --surface-2:     #16181C;   /* elevated card / popover / hover row */
+  --surface-3:     #1C1F24;   /* highest elevation, active row, tooltip */
+
+  /* ── COLOR · text/ink (no pure #FFF on large blocks) ── */
+  --ink:           #F5F6F7;   /* titles, key numbers */
+  --ink-2:         #A1A1AA;   /* body copy — 6.9:1 on surface-2 */
+  --ink-3:         #888D95;   /* secondary/captions — AA 4.5+ on every surface (5.3:1 on surface-2) */
+  --ink-on-accent: #05130B;   /* text sitting on a green fill (AA on #2CE58B) */
+
+  /* ── COLOR · brand green (the single saturated accent, tuned to glow on dark) ── */
+  --green:         #2CE58B;   /* primary accent — CTAs, active, focus ring */
+  --green-bright:  #00E676;   /* fills / stronger emphasis */
+  --green-dim:     #1FA968;   /* pressed / secondary green text */
+  --green-wash:    rgba(44, 229, 139, 0.10);  /* tinted backgrounds */
+  --green-line:    rgba(44, 229, 139, 0.28);  /* green hairline borders */
+  --green-glow:    rgba(44, 229, 139, 0.35);  /* soft glow behind CTA/hero */
+
+  /* ── COLOR · hairlines & separators (translucent white for depth on dark) ── */
+  --line:          rgba(255, 255, 255, 0.08); /* card / control borders */
+  --line-2:        rgba(255, 255, 255, 0.06); /* section separators */
+  --line-strong:   rgba(255, 255, 255, 0.14); /* hover / focus borders */
+
+  /* ── COLOR · glass (nav sticky + premium cards) ── */
+  --glass-bg:        rgba(255, 255, 255, 0.04);
+  --glass-border:    rgba(255, 255, 255, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.14); /* top 1px light-catch edge */
+  --glass-blur:      16px;
+
+  /* ── COLOR · semantic status (map to includes/statuses.php) ──
+     Kept low-saturation so green stays the hero color; each has fg/bg/line.  */
+  --st-neutral:  #A1A1AA;  --st-neutral-bg: rgba(161,161,170,0.10);  --st-neutral-line: rgba(161,161,170,0.24);
+  --st-info:     #6AA8FF;  --st-info-bg:    rgba(106,168,255,0.12);  --st-info-line:    rgba(106,168,255,0.28);
+  --st-success:  #2CE58B;  --st-success-bg: rgba(44,229,139,0.12);   --st-success-line: rgba(44,229,139,0.30);
+  --st-warn:     #F5B454;  --st-warn-bg:    rgba(245,180,84,0.12);   --st-warn-line:    rgba(245,180,84,0.30);
+  --st-danger:   #FF6B6B;  --st-danger-bg:  rgba(255,107,107,0.12);  --st-danger-line:  rgba(255,107,107,0.30);
+  --st-active:   #C9A6FF;  --st-active-bg:  rgba(201,166,255,0.12);  --st-active-line:  rgba(201,166,255,0.30);
+
+  /* ── TYPOGRAPHY · families (all Google Fonts / @font-face, no build step) ──
+     Display  → Inter Tight  (geometric grotesque, sentence-case, negative tracking)
+     Body     → Inter
+     Mono     → JetBrains Mono (eyebrows [ SOFTWARE STUDIO ], technical data) */
+  --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* ── TYPOGRAPHY · fluid scale (clamp: min @375px … max @1440px) ── */
+  --fs-display: clamp(2.75rem, 1.4rem + 5.8vw, 5rem);    /* 44 → 80  hero */
+  --fs-h1:      clamp(2.25rem, 1.4rem + 3.6vw, 3.5rem);  /* 36 → 56  section titles */
+  --fs-h2:      clamp(1.75rem, 1.2rem + 2.3vw, 2.5rem);  /* 28 → 40 */
+  --fs-h3:      clamp(1.3rem,  1.05rem + 1.1vw, 1.75rem);/* 21 → 28 */
+  --fs-lead:    clamp(1.125rem, 1rem + 0.6vw, 1.375rem); /* 18 → 22  hero subtitle */
+  --fs-body:    1.0625rem;  /* 17 */
+  --fs-sm:      0.9375rem;  /* 15 */
+  --fs-xs:      0.8125rem;  /* 13 */
+  --fs-eyebrow: 0.75rem;    /* 12  mono eyebrow */
+
+  --lh-tight:   1.05;   /* display */
+  --lh-snug:    1.2;    /* headings */
+  --lh-body:    1.65;   /* paragraphs */
+
+  --tracking-tight: -0.022em; /* large display */
+  --tracking-snug:  -0.012em; /* headings */
+  --tracking-wide:  0.14em;   /* mono eyebrows / labels */
+
+  /* ── SPACING · base-4/8 scale ── */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;  --space-4: 1rem;
+  --space-5: 1.5rem;   --space-6: 2rem;     --space-7: 3rem;     --space-8: 4rem;
+  --space-9: 6rem;     --space-10: 8rem;
+
+  --section-y: clamp(5rem, 3rem + 9vw, 10rem);  /* 80 → 160  vertical section rhythm */
+  --container: 1200px;                          /* content max-width (landing) */
+  --container-narrow: 1120px;                   /* text-forward sections */
+
+  /* ── RADIUS ── */
+  --radius-lg:   20px;  /* hero/premium cards */
+  --radius:      14px;  /* standard cards */
+  --radius-sm:   10px;  /* buttons, inputs */
+  --radius-xs:   8px;   /* chips, small controls */
+  --radius-pill: 999px;
+
+  /* ── DEPTH · soft diffuse shadows + 1px translucent border (never harsh) ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow:    0 4px 12px -2px rgba(0,0,0,0.5), 0 2px 6px -2px rgba(0,0,0,0.4);
+  --shadow-lg: 0 24px 60px -20px rgba(0,0,0,0.7), 0 8px 20px -12px rgba(0,0,0,0.55);
+  --shadow-glow: 0 0 0 1px var(--green-line), 0 8px 30px -6px var(--green-glow); /* CTA hover */
+
+  /* ── MOTION · premium easing + durations ── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);   /* entrances / reveals */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1); /* hover / UI transitions */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);  /* symmetric */
+
+  --t-fast:   0.15s;  /* hover micro */
+  --t-mid:    0.25s;  /* control transitions */
+  --t-slow:   0.45s;  /* small reveals */
+  --t-reveal: 0.7s;   /* large scroll reveals */
+
+  /* ── FOCUS ring (visible, green, AA) ── */
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--green);
+
+  /* ── Z-scale (semantic) ── */
+  --z-base: 0; --z-raised: 10; --z-sticky: 100; --z-nav: 200; --z-overlay: 900; --z-modal: 1000;
+}
+
+/* Base page — every surface opts in by inheriting these on <body>. */
+html { color-scheme: dark; }
+
+/* Accessibility: kill all non-essential motion when the user asks for it.
+   Component reveals must degrade to their final visible state (opacity:1). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

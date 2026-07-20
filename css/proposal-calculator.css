@@ -1,169 +1,253 @@
-/* ============================================================
-   ChichaLabs Studio — Proposal Calculator (compartido portal/admin)
-   Depende de los tokens de :root definidos en css/styles.css
-   ============================================================ */
+/* ============================================================================
+   ChichaLabs Studio — PROPOSAL CALCULATOR (compartido portal + admin)
+   Dark Premium. Tokens en /css/tokens.css (cargado antes que este archivo).
+   La estructura .pc-* la genera portal|admin/js/proposal-calculator.js —
+   NO cambiar nombres de clase ni IDs sin tocar el JS en conjunto.
+   Configurar la propuesta debe sentirse como configurar un producto Apple:
+   claro, deseable, sin fricción.
+   ============================================================================ */
 
-.pc-categories { display: flex; flex-direction: column; gap: 2.5rem; margin-bottom: 2.5rem; }
+.pc-categories { display: flex; flex-direction: column; gap: 2.5rem; margin-bottom: 2rem; }
+.pc-category { display: flex; flex-direction: column; }
 
 .pc-category__title {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
+  font-weight: 500;
   text-transform: uppercase;
-  font-size: 1.4rem;
-  color: var(--black);
-  border-bottom: 2px solid var(--green);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-wide);
+  color: var(--green);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
 }
 
+/* ── Módulo = tarjeta seleccionable ── */
 .pc-module {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid rgba(11,11,11,0.1);
+  padding: 1.25rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-1);
   cursor: pointer;
+  transition: border-color var(--t-mid), background var(--t-mid), box-shadow var(--t-mid);
+}
+.pc-module:hover { border-color: var(--line-strong); background: var(--surface-2); }
+
+/* Seleccionado → resalte verde (como elegir una opción de producto) */
+.pc-module:has(.pc-module__checkbox:checked) {
+  border-color: var(--green-line);
+  background: var(--green-wash);
+  box-shadow: inset 0 0 0 1px var(--green-line);
 }
 
-.pc-module:last-child { border-bottom: none; }
-
+/* Custom checkbox */
 .pc-module__checkbox {
-  margin-top: 0.3rem;
-  width: 1.15rem;
-  height: 1.15rem;
-  accent-color: var(--green);
+  appearance: none;
+  -webkit-appearance: none;
+  margin-top: 0.15rem;
+  width: 1.3rem; height: 1.3rem;
   flex-shrink: 0;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-2);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: background var(--t-fast), border-color var(--t-fast);
 }
+.pc-module__checkbox::before {
+  content: '';
+  width: 0.72rem; height: 0.72rem;
+  background: var(--ink-on-accent);
+  clip-path: polygon(41% 66%, 84% 22%, 93% 31%, 41% 84%, 8% 51%, 17% 42%);
+  transform: scale(0);
+  transition: transform var(--t-fast) var(--ease-out-quint);
+}
+.pc-module__checkbox:checked { background: var(--green); border-color: var(--green); }
+.pc-module__checkbox:checked::before { transform: scale(1); }
+.pc-module__checkbox:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--green-wash); }
 
+/* Bloqueado (obligatorio) */
 .pc-module--locked { cursor: default; }
-.pc-module--locked .pc-module__checkbox { cursor: not-allowed; }
-
-.pc-module__body { display: flex; flex-direction: column; gap: 0.4rem; }
-
-.pc-module__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.6rem 1rem;
-}
-
-.pc-module__num {
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  font-weight: 700;
+.pc-module--locked .pc-module__checkbox { cursor: not-allowed; opacity: 0.85; }
+.pc-module--locked .pc-module__name::after {
+  content: 'Incluido';
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--green);
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.45rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
 }
 
-.pc-module__name { font-weight: 700; font-size: 1.05rem; }
-
+.pc-module__body { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+.pc-module__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1rem; }
+.pc-module__num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  width: 100%;
+}
+.pc-module__name { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--ink); letter-spacing: var(--tracking-snug); }
 .pc-module__price {
   margin-left: auto;
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
+.pc-module__bullets { margin: 0; padding-left: 1.15rem; color: var(--ink-2); font-size: 0.9rem; line-height: 1.55; }
+.pc-module__bullets li { margin-bottom: 0.25rem; }
+.pc-module__bullets li::marker { color: var(--green); }
 
-.pc-module__bullets { margin: 0; padding-left: 1.1rem; color: rgba(11,11,11,0.7); font-size: 0.92rem; }
-.pc-module__bullets li { margin-bottom: 0.2rem; }
-
-.pc-module__delivery { font-size: 0.85rem; color: rgba(11,11,11,0.55); margin: 0; }
-.pc-module__notes { font-size: 0.85rem; color: rgba(11,11,11,0.55); margin: 0; font-style: italic; }
-
+.pc-module__delivery { font-size: 0.82rem; color: var(--ink-3); margin: 0; }
+.pc-module__notes { font-size: 0.82rem; color: var(--ink-3); margin: 0; font-style: italic; }
 .pc-module__external {
-  font-size: 0.85rem;
-  color: var(--black);
-  background: rgba(0,191,99,0.08);
-  border-left: 3px solid var(--green);
-  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  color: var(--st-warn);
+  background: var(--st-warn-bg);
+  border: 1px solid var(--st-warn-line);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.8rem;
   margin: 0.25rem 0 0;
 }
 
-/* --- Totales --- */
+/* ── Totales — STICKY, siempre visibles ── */
 .pc-totals {
+  position: sticky;
+  bottom: 1rem;
+  z-index: var(--z-sticky);
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  background: var(--tinted);
-  border-radius: 4px;
+  flex-wrap: wrap;
+  gap: 0.5rem 2.5rem;
+  padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
+  background: rgba(17, 18, 20, 0.75);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.pc-totals__row { display: flex; flex-direction: column; gap: 0.15rem; }
+.pc-totals__row:empty { display: none; }
+.pc-totals__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+.pc-totals__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
 }
 
-.pc-totals__row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-.pc-totals__row:empty { display: none; }
-
-.pc-totals__label { font-size: 0.85rem; color: rgba(11,11,11,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
-.pc-totals__value { font-family: var(--font-display); font-size: 1.6rem; color: var(--black); }
-
-/* --- Condiciones --- */
+/* ── Condiciones ── */
 .pc-conditions {
   font-size: 0.9rem;
-  color: rgba(11,11,11,0.7);
+  color: var(--ink-3);
   margin-bottom: 2rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
 }
 .pc-conditions p { margin: 0 0 0.5rem; }
+.pc-conditions strong { color: var(--ink); font-weight: 600; }
 
-/* --- CTA --- */
+/* ── CTA ── */
 .pc-cta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+/* #pc-cta-accept es .btn--ghost → ya es el fill verde con glow del design system.
+   Le damos un poco más de presencia porque es el CTA más importante del sistema. */
+#pc-cta-accept { font-size: 1.02rem; padding: 1rem 2.25rem; }
 
 .pc-cta--expired {
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  background: rgba(191,0,0,0.06);
-  border-left: 3px solid #BF0000;
-  border-radius: 4px;
+  gap: 0.9rem;
+  padding: 1.5rem;
+  background: var(--st-danger-bg);
+  border: 1px solid var(--st-danger-line);
+  border-left-width: 3px;
+  border-radius: var(--radius);
 }
-
-.pc-cta__expired-msg { margin: 0; font-weight: 700; }
+.pc-cta__expired-msg { margin: 0; font-weight: 500; color: var(--ink); }
 
 .pc-cta--preview .pc-cta__badge {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
-  padding: 0.6rem 1rem;
-  border: 2px dashed rgba(11,11,11,0.25);
-  border-radius: 4px;
-  color: rgba(11,11,11,0.55);
+  padding: 0.65rem 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-3);
+  background: var(--surface-1);
 }
+.pc-cta--preview .pc-cta__badge--accept { border-color: var(--green-line); color: var(--green); background: var(--green-wash); }
 
-/* --- Modal de confirmación --- */
+/* ── Modal de confirmación (glass, premium) ── */
 .pc-modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: rgba(11,11,11,0.35);
+  background: rgba(6, 6, 8, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   opacity: 0;
   visibility: hidden;
-  transition: opacity var(--t-fast) var(--ease), visibility 0s linear var(--t-fast);
+  transition: opacity var(--t-mid) var(--ease-out-quint), visibility 0s linear var(--t-mid);
 }
-
-.pc-modal.is-open {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity var(--t-fast) var(--ease), visibility 0s;
-}
+.pc-modal.is-open { opacity: 1; visibility: visible; transition: opacity var(--t-mid) var(--ease-out-quint), visibility 0s; }
 
 .pc-modal__panel {
-  background: var(--bg);
-  border: 2px solid var(--green);
-  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   padding: 2rem;
-  max-width: 26rem;
+  max-width: 27rem;
   width: 100%;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.96) translateY(8px);
+  transition: transform var(--t-mid) var(--ease-out-quint);
 }
-
-.pc-modal__title { font-family: var(--font-display); font-size: 1.5rem; text-transform: uppercase; margin: 0 0 0.75rem; }
-.pc-modal__body { color: rgba(11,11,11,0.7); margin: 0 0 1.5rem; }
-.pc-modal__actions { display: flex; justify-content: flex-end; gap: 1rem; }
+.pc-modal.is-open .pc-modal__panel { transform: scale(1) translateY(0); }
+.pc-modal__panel::before {
+  content: ''; display: block; height: 1px; margin: -2rem -2rem 1.5rem;
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+}
+.pc-modal__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: var(--tracking-snug);
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+}
+.pc-modal__body { color: var(--ink-2); margin: 0 0 1.75rem; line-height: 1.6; }
+.pc-modal__actions { display: flex; justify-content: flex-end; gap: 1rem; align-items: center; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pc-modal { transition: none; }
+  .pc-modal, .pc-modal__panel { transition: none; }
+  .pc-module__checkbox::before { transition: none; }
 }

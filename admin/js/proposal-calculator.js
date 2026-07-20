@@ -215,7 +215,11 @@
     var lastFocused = null;
     var FOCUSABLE = 'a[href], button:not([disabled])';
 
-    function openModal() {
+    function openModal(e) {
+      /* El botón de aceptar es type="submit": sin esto, el click enviaría el form
+         de una y el modal de confirmación nunca llegaría a mostrarse. El submit real
+         lo dispara el botón "Sí, aceptar" del modal (form.requestSubmit()). */
+      if (e && e.preventDefault) e.preventDefault();
       lastFocused = document.activeElement;
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');

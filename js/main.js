@@ -20,6 +20,9 @@
     initIconAnimations();
     initFlowDot();
     initMarquee();
+    initCountUp();
+    initSpotlight();
+    initScrollProgress();
   }
 
   /* ============================================================
@@ -136,7 +139,7 @@
           const d  = Math.sqrt(dx*dx + dy*dy);
           if (d < MAX_DIST) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(11,11,11,${(1 - d / MAX_DIST) * 0.11})`;
+            ctx.strokeStyle = `rgba(120,140,130,${(1 - d / MAX_DIST) * 0.16})`;
             ctx.lineWidth = 1;
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -146,9 +149,12 @@
       }
       nodes.forEach(n => {
         ctx.beginPath();
-        ctx.fillStyle = '#00BF63';
-        ctx.arc(n.x, n.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(44,229,139,0.85)';
+        ctx.shadowColor = 'rgba(44,229,139,0.6)';
+        ctx.shadowBlur = 6;
+        ctx.arc(n.x, n.y, 2.2, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
       });
       if (!prefersReducedMotion) raf = requestAnimationFrame(draw);
     }
@@ -395,6 +401,78 @@
     const marquee = track.parentElement;
     marquee.addEventListener('mouseenter', () => { track.style.animationPlayState = 'paused'; });
     marquee.addEventListener('mouseleave', () => { track.style.animationPlayState = 'running'; });
+  }
+
+  /* ============================================================
+     COUNT-UP — números/KPIs animan al entrar en viewport
+  ============================================================ */
+  function initCountUp() {
+    const nums = document.querySelectorAll('.metric__num');
+    if (!nums.length || !window.IntersectionObserver) return;
+
+    nums.forEach(el => {
+      // Parseo "+20", "×3", "7" → prefijo + entero + sufijo
+      const raw = el.textContent.trim();
+      const m = raw.match(/^(\D*)(\d+)(\D*)$/);
+      if (!m) return;
+      const [, prefix, digits, suffix] = m;
+      const target = parseInt(digits, 10);
+      el.dataset.done = 'false';
+
+      if (prefersReducedMotion) return; // deja el valor final tal cual
+
+      // Estado inicial visible: prefijo + 0
+      const obs = new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting || el.dataset.done === 'true') return;
+        el.dataset.done = 'true';
+        obs.disconnect();
+        const duration = 1100;
+        const start = performance.now();
+        function tick(now) {
+          const p = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+          el.textContent = prefix + Math.round(target * eased) + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = raw;
+        }
+        el.textContent = prefix + '0' + suffix;
+        requestAnimationFrame(tick);
+      }, { threshold: 0.5 });
+      obs.observe(el);
+    });
+  }
+
+  /* ============================================================
+     SPOTLIGHT — gradiente que sigue el cursor en tarjetas premium
+  ============================================================ */
+  function initSpotlight() {
+    if (prefersReducedMotion || !window.matchMedia('(hover: hover)').matches) return;
+    const cards = document.querySelectorAll('.case-card, .diag-layout__offer');
+    cards.forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--x', ((e.clientX - r.left) / r.width * 100) + '%');
+        card.style.setProperty('--y', ((e.clientY - r.top) / r.height * 100) + '%');
+      });
+    });
+  }
+
+  /* ============================================================
+     SCROLL PROGRESS — barra fina superior
+  ============================================================ */
+  function initScrollProgress() {
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    document.body.appendChild(bar);
+    function update() {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
   }
 
 })();

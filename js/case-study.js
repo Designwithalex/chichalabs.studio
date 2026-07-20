@@ -116,7 +116,7 @@
             <div class="cs-meta-item">
               <span class="cs-meta-item__label">Responsabilidades</span>
               <ul style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.4rem;">
-                ${resps.replace(/<li>/g, '<li style="font-size:0.85rem;color:rgba(11,11,11,0.6);padding-left:1rem;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:var(--cs-accent);">·</span>')}
+                ${resps.replace(/<li>/g, '<li style="font-size:0.85rem;color:rgba(245,246,247,0.6);padding-left:1rem;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:var(--cs-accent);">·</span>')}
               </ul>
             </div>
             <div class="cs-meta-item">
@@ -309,7 +309,7 @@
     <div class="cs-error">
       <span class="cs-error__code">404</span>
       <h1 class="cs-error__title">Caso no encontrado</h1>
-      <p style="color:rgba(11,11,11,0.5);max-width:38ch;line-height:1.65;">
+      <p style="color:rgba(245,246,247,0.5);max-width:38ch;line-height:1.65;">
         El proyecto que buscás no existe o fue removido.
       </p>
       <a href="index.html#casos" class="btn btn--ghost" style="margin-top:1rem;">
