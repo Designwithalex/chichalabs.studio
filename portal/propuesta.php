@@ -41,6 +41,17 @@ if (!$isAccepted && $proposal['sent_at'] !== null) {
     $isExpired = $expiresAt < new DateTimeImmutable();
 }
 
+/* Equivalente en la moneda secundaria (ej. ARS cuando se cotiza en USD).
+   Devuelve '' si la propuesta no tiene moneda secundaria + tipo de cambio. */
+function fx_alt_html(array $proposal, float $amount): string
+{
+    if (empty($proposal['secondary_currency']) || (float) ($proposal['fx_rate'] ?? 0) <= 0) {
+        return '';
+    }
+    $alt = $proposal['secondary_currency'] . ' ' . number_format($amount * (float) $proposal['fx_rate'], 0, ',', '.');
+    return '<span class="pc-price-alt">≈ ' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '</span>';
+}
+
 $pageTitle = $proposal['title'];
 require __DIR__ . '/inc/header.php';
 ?>
@@ -69,7 +80,7 @@ require __DIR__ . '/inc/header.php';
               <span class="pc-module__num">Módulo <?= str_pad((string) ($m['module_number'] ?? ''), 2, '0', STR_PAD_LEFT) ?></span>
               <span class="pc-module__name"><?= htmlspecialchars((string) ($m['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="pc-module__price">
-                <?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) ($m['price_min'] ?? 0), 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?><?= (($m['billing_type'] ?? '') === 'monthly') ? ' / mes' : '' ?>
+                <?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) ($m['price_min'] ?? 0), 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?><?= (($m['billing_type'] ?? '') === 'monthly') ? ' / mes' : '' ?><?= fx_alt_html($proposal, (float) ($m['price_min'] ?? 0)) ?>
               </span>
             </span>
           </span>
@@ -81,13 +92,13 @@ require __DIR__ . '/inc/header.php';
       <?php if ($proposal['accepted_total_once'] !== null && (float) $proposal['accepted_total_once'] > 0): ?>
         <div class="pc-totals__row">
           <span class="pc-totals__label">Costo único</span>
-          <span class="pc-totals__value"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_once'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="pc-totals__value"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_once'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?><?= fx_alt_html($proposal, (float) $proposal['accepted_total_once']) ?></span>
         </div>
       <?php endif; ?>
       <?php if ($proposal['accepted_total_monthly'] !== null && (float) $proposal['accepted_total_monthly'] > 0): ?>
         <div class="pc-totals__row">
           <span class="pc-totals__label">Costo mensual</span>
-          <span class="pc-totals__value"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_monthly'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="pc-totals__value"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $proposal['accepted_total_monthly'], 0, ',', '.'), ENT_QUOTES, 'UTF-8') ?><?= fx_alt_html($proposal, (float) $proposal['accepted_total_monthly']) ?></span>
         </div>
       <?php endif; ?>
     </div>
@@ -117,9 +128,11 @@ require __DIR__ . '/inc/header.php';
     }, $modules);
 
     $jsMeta = [
-        'mode'          => 'portal',
-        'status'        => $proposal['status'],
-        'currency'      => $proposal['currency'],
+        'mode'               => 'portal',
+        'status'             => $proposal['status'],
+        'currency'           => $proposal['currency'],
+        'secondary_currency' => $proposal['secondary_currency'],
+        'fx_rate'            => $proposal['fx_rate'] !== null ? (float) $proposal['fx_rate'] : null,
         'payment_terms' => $proposal['payment_terms'],
         'validity_days' => (int) $proposal['validity_days'],
         'sent_at'       => $proposal['sent_at'],

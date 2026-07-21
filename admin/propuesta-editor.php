@@ -55,10 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'update_proposal') {
         $hourlyRate = (float) ($_POST['hourly_rate'] ?? 0);
-        $stmt = $pdo->prepare('UPDATE proposals SET title = ?, currency = ?, hourly_rate = ?, payment_terms = ?, validity_days = ?, general_notes = ? WHERE id = ?');
+        $fxRate     = (float) ($_POST['fx_rate'] ?? 0);
+        $secondary  = trim((string) ($_POST['secondary_currency'] ?? ''));
+        /* La moneda secundaria solo tiene sentido con un tipo de cambio cargado
+           (y viceversa): si falta uno de los dos, se guardan ambos en NULL. */
+        $hasSecondary = $secondary !== '' && $fxRate > 0;
+        $stmt = $pdo->prepare('UPDATE proposals SET title = ?, currency = ?, secondary_currency = ?, fx_rate = ?, hourly_rate = ?, payment_terms = ?, validity_days = ?, general_notes = ? WHERE id = ?');
         $stmt->execute([
             trim((string) ($_POST['title'] ?? '')),
             trim((string) ($_POST['currency'] ?? '')) ?: 'ARS',
+            $hasSecondary ? $secondary : null,
+            $hasSecondary ? $fxRate : null,
             $hourlyRate > 0 ? $hourlyRate : null,
             trim((string) ($_POST['payment_terms'] ?? '')) ?: null,
             (int) ($_POST['validity_days'] ?? 15),
@@ -186,9 +193,11 @@ $jsModules = array_map(static function (array $m): array {
 }, $modules);
 
 $jsMeta = [
-    'mode'          => 'admin',
-    'status'        => $proposal['status'],
-    'currency'      => $proposal['currency'],
+    'mode'               => 'admin',
+    'status'             => $proposal['status'],
+    'currency'           => $proposal['currency'],
+    'secondary_currency' => $proposal['secondary_currency'],
+    'fx_rate'            => $proposal['fx_rate'] !== null ? (float) $proposal['fx_rate'] : null,
     'payment_terms' => $proposal['payment_terms'],
     'validity_days' => (int) $proposal['validity_days'],
     'sent_at'       => $proposal['sent_at'],
@@ -256,6 +265,11 @@ require __DIR__ . '/inc/header.php';
           <label>Valor hora <input type="number" name="hourly_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['hourly_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 30"></label>
         </div>
         <p class="admin-hint">El precio de cada módulo se calcula como <strong>valor hora × horas</strong>. Al guardar, se recalculan todos los módulos con este valor.</p>
+        <div class="admin-cols">
+          <label>Moneda secundaria <input type="text" name="secondary_currency" value="<?= htmlspecialchars((string) ($proposal['secondary_currency'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: ARS (opcional)"></label>
+          <label>Tipo de cambio <input type="number" name="fx_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['fx_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 1520"></label>
+        </div>
+        <p class="admin-hint">Opcional: si cargás las dos, cada precio se muestra también en la moneda secundaria (<strong>precio × tipo de cambio</strong>). Los totales aceptados se siguen guardando en la moneda principal.</p>
         <label>Condiciones de pago <textarea name="payment_terms" rows="2"><?= htmlspecialchars((string) $proposal['payment_terms'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
         <label class="admin-field--sm">Validez (días) <input type="number" name="validity_days" min="1" value="<?= (int) $proposal['validity_days'] ?>" required></label>
         <label>Notas generales <textarea name="general_notes" rows="2"><?= htmlspecialchars((string) $proposal['general_notes'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
@@ -313,6 +327,8 @@ require __DIR__ . '/inc/header.php';
     (function () {
       var rate = <?= (float) ($proposal['hourly_rate'] ?? 0) ?>;
       var cur  = <?= json_encode($proposal['currency'], JSON_HEX_TAG) ?>;
+      var fx   = <?= (float) ($proposal['fx_rate'] ?? 0) ?>;
+      var cur2 = <?= json_encode((string) ($proposal['secondary_currency'] ?? ''), JSON_HEX_TAG) ?>;
       var input = document.getElementById('module-hours');
       var out   = document.getElementById('module-price-preview');
       if (!input || !out) return;
@@ -320,7 +336,9 @@ require __DIR__ . '/inc/header.php';
         if (rate <= 0) { out.textContent = 'definí el valor hora arriba'; return; }
         var h = parseFloat(input.value) || 0;
         var p = Math.round(h * rate * 100) / 100;
-        out.textContent = cur + ' ' + p.toLocaleString('es-AR');
+        var txt = cur + ' ' + p.toLocaleString('es-AR');
+        if (fx > 0 && cur2) txt += ' · ' + cur2 + ' ' + Math.round(p * fx).toLocaleString('es-AR');
+        out.textContent = txt;
       }
       input.addEventListener('input', upd);
       upd();

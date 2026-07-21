@@ -54,7 +54,9 @@
   function renderModule(m) {
     var checked = m.is_locked || m.default_checked;
     var locked  = !!m.is_locked;
-    var priceLabel = formatRange(m.price_min, m.price_max) + (m.billing_type === 'monthly' ? ' / mes' : '');
+    var perMonth   = m.billing_type === 'monthly' ? ' / mes' : '';
+    var priceLabel = formatRange(m.price_min, m.price_max) + perMonth;
+    var priceAlt   = formatAlt(m.price_min, m.price_max);
 
     var bullets = String(m.description || '')
       .split('\n')
@@ -76,7 +78,9 @@
           '<span class="pc-module__head">' +
             '<span class="pc-module__num">Módulo ' + String(m.module_number).padStart(2, '0') + '</span>' +
             '<span class="pc-module__name">' + esc(m.name) + '</span>' +
-            '<span class="pc-module__price">' + esc(priceLabel) + '</span>' +
+            '<span class="pc-module__price">' + esc(priceLabel) +
+              (priceAlt ? '<span class="pc-price-alt">≈ ' + esc(priceAlt + perMonth) + '</span>' : '') +
+            '</span>' +
           '</span>' +
           (bullets.length ? '<ul class="pc-module__bullets">' + bullets.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>' : '') +
           (m.delivery_estimate ? '<p class="pc-module__delivery">Entrega estimada: ' + esc(m.delivery_estimate) + '</p>' : '') +
@@ -168,8 +172,11 @@
     if (!mods.length) { el.innerHTML = ''; return; }
     var min = mods.reduce(function (s, m) { return s + Number(m.price_min); }, 0);
     var max = mods.reduce(function (s, m) { return s + Number(m.price_max); }, 0);
+    var alt = formatAlt(min, max);
     el.innerHTML = '<span class="pc-totals__label">' + esc(label) + '</span>' +
-      '<span class="pc-totals__value">' + esc(formatRange(min, max, META.currency)) + '</span>';
+      '<span class="pc-totals__value">' + esc(formatRange(min, max, META.currency)) +
+        (alt ? '<span class="pc-price-alt">≈ ' + esc(alt) + '</span>' : '') +
+      '</span>';
   }
 
   function toggleCTA(showAccept) {
@@ -261,6 +268,17 @@
     min = Number(min); max = Number(max);
     if (min === max) return cur + ' ' + min.toLocaleString('es-AR');
     return cur + ' ' + min.toLocaleString('es-AR') + ' – ' + max.toLocaleString('es-AR');
+  }
+
+  /* Equivalente en la moneda secundaria (ej. ARS cuando se cotiza en USD).
+     Devuelve '' si la propuesta no tiene moneda secundaria + tipo de cambio. */
+  function formatAlt(min, max) {
+    var fx = Number(META.fx_rate || 0);
+    if (!META.secondary_currency || fx <= 0) return '';
+    var lo = Math.round(Number(min) * fx);
+    var hi = Math.round(Number(max) * fx);
+    if (lo === hi) return META.secondary_currency + ' ' + lo.toLocaleString('es-AR');
+    return META.secondary_currency + ' ' + lo.toLocaleString('es-AR') + ' – ' + hi.toLocaleString('es-AR');
   }
 
   function computeValidUntil() {

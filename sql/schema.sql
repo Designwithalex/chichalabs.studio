@@ -34,6 +34,8 @@ CREATE TABLE proposals (
   status VARCHAR(50) NOT NULL DEFAULT 'borrador',
   -- borrador | enviada | aceptada | vencida
   currency VARCHAR(10) DEFAULT 'ARS',
+  secondary_currency VARCHAR(10) NULL,        -- moneda de referencia opcional (ej. ARS si se cotiza en USD)
+  fx_rate DECIMAL(14,4) NULL,                 -- tipo de cambio fijo: monto_secundario = precio × fx_rate
   hourly_rate DECIMAL(10,2) NULL,             -- valor hora global; precio de cada módulo = hourly_rate × módulo.hours
   payment_terms TEXT,
   validity_days INT DEFAULT 15,

@@ -107,8 +107,22 @@
   font-size: 1rem;
   color: var(--ink);
   white-space: nowrap;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* Equivalente en moneda secundaria — siempre debajo del monto principal,
+   nunca compitiendo con él en peso visual. */
+.pc-price-alt {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: 400;
+  font-size: 0.8em;
+  line-height: 1.2;
+  color: var(--ink-2);
+  letter-spacing: 0;
+}
+
 .pc-module__bullets { margin: 0; padding-left: 1.15rem; color: var(--ink-2); font-size: 0.9rem; line-height: 1.55; }
 .pc-module__bullets li { margin-bottom: 0.25rem; }
 .pc-module__bullets li::marker { color: var(--green); }
@@ -160,6 +174,9 @@
   letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;
 }
+/* En el total el monto principal es grande: el equivalente necesita bajar más
+   de proporción que en los módulos para no competir con él. */
+.pc-totals__value .pc-price-alt { font-size: 0.55em; }
 
 /* ── Condiciones ── */
 .pc-conditions {
