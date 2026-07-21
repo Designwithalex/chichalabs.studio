@@ -235,6 +235,87 @@ p { font-family: var(--font-body); }
 }
 .nav__links a:hover { color: var(--ink); }
 
+/* Dropdown de servicios — abre por hover y por click/teclado. El estado vive
+   en .is-open (lo maneja el JS) para que aria-expanded nunca mienta. */
+.nav__dropdown { position: relative; }
+.nav__dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--ink-3);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+.nav__dropdown-toggle:hover,
+.nav__dropdown.is-open .nav__dropdown-toggle { color: var(--ink); }
+.nav__chevron { width: 0.7rem; height: 0.7rem; transition: transform var(--t-fast) var(--ease-out-quint); }
+.nav__dropdown.is-open .nav__chevron { transform: rotate(180deg); }
+
+.nav__menu {
+  position: absolute;
+  top: calc(100% + 0.9rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  width: min(24rem, calc(100vw - 3rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem;
+  background: rgba(17, 18, 20, 0.94);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-out-quint),
+              transform var(--t-fast) var(--ease-out-quint),
+              visibility 0s var(--t-fast);
+}
+.nav__dropdown.is-open .nav__menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity var(--t-fast) var(--ease-out-quint),
+              transform var(--t-fast) var(--ease-out-quint),
+              visibility 0s;
+}
+/* Puente invisible sobre el gap: sin esto el menú se cierra al cruzarlo con el mouse. */
+.nav__menu::before { content: ''; position: absolute; inset: -0.9rem 0 auto; height: 0.9rem; }
+
+.nav__menu-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--t-fast);
+}
+.nav__menu-item:hover,
+.nav__menu-item:focus-visible { background: var(--surface-2); }
+.nav__menu-name { font-size: 0.88rem; color: var(--ink); }
+.nav__menu-desc { font-size: 0.78rem; line-height: 1.45; color: var(--ink-3); }
+.nav__menu-all {
+  margin-top: 0.3rem;
+  padding: 0.65rem 0.75rem 0.4rem;
+  border-top: 1px solid var(--line-2);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--green);
+}
+.nav__menu-all:hover { color: var(--green-bright); }
+
 .nav__cta { display: none; font-size: 0.85rem; padding: 0.55rem 1.2rem; flex-shrink: 0; }
 
 /* Hamburguesa */
@@ -296,6 +377,23 @@ p { font-family: var(--font-body); }
   color: var(--ink);
 }
 .nav-mobile__links a:hover, .nav-mobile__links a:focus-visible { color: var(--green); }
+/* Sublista de servicios — siempre visible, sin acordeón: en un menú de 5 ítems
+   esconderlos detrás de otro tap sería fricción sin ganancia. */
+.nav-mobile__sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: -0.35rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--line);
+}
+.nav-mobile__links .nav-mobile__sub a {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
 .nav-mobile__ctas { display: flex; flex-direction: column; align-items: stretch; gap: 0.9rem; }
 .nav-mobile__ctas .btn { justify-content: center; }
 body.nav-open { overflow: hidden; }

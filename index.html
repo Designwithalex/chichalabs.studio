@@ -27,7 +27,35 @@
   <nav class="nav" id="nav" role="navigation" aria-label="Navegación principal">
     <a href="#hero" class="nav__monogram" aria-label="ChichaLabs Studio — Inicio">[ CL ]</a>
     <div class="nav__links">
-      <a href="#servicios">Servicios</a>
+      <div class="nav__dropdown" data-nav-dropdown>
+        <button type="button" class="nav__dropdown-toggle" id="nav-servicios-toggle" aria-expanded="false" aria-controls="nav-servicios-menu">
+          Servicios
+          <svg class="nav__chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav__menu" id="nav-servicios-menu" aria-labelledby="nav-servicios-toggle">
+          <a class="nav__menu-item" href="#diagnostico">
+            <span class="nav__menu-name">Diagnóstico tecnológico</span>
+            <span class="nav__menu-desc">El primer paso: qué conviene construir y en qué orden</span>
+          </a>
+          <a class="nav__menu-item" href="servicios/aplicaciones-web.html">
+            <span class="nav__menu-name">Aplicaciones y sitios web</span>
+            <span class="nav__menu-desc">Plataformas, productos web y sitios de alto rendimiento</span>
+          </a>
+          <a class="nav__menu-item" href="servicios/automatizaciones.html">
+            <span class="nav__menu-name">Automatizaciones e integraciones</span>
+            <span class="nav__menu-desc">Que la información llegue sola al lugar correcto</span>
+          </a>
+          <a class="nav__menu-item" href="servicios/dashboards.html">
+            <span class="nav__menu-name">Dashboards y herramientas internas</span>
+            <span class="nav__menu-desc">Paneles, CRMs y sistemas a medida para operar con datos</span>
+          </a>
+          <a class="nav__menu-item" href="servicios/ia-procesos.html">
+            <span class="nav__menu-name">IA aplicada a procesos</span>
+            <span class="nav__menu-desc">Automatizar el trabajo repetitivo que consume horas</span>
+          </a>
+          <a class="nav__menu-all" href="#servicios">Ver todos los servicios →</a>
+        </div>
+      </div>
       <a href="#trabajos">Trabajos</a>
       <a href="#casos">Casos</a>
       <a href="#diagnostico">Diagnóstico</a>
@@ -45,6 +73,13 @@
   <div class="nav-mobile" id="nav-mobile" aria-hidden="true" inert>
     <div class="nav-mobile__links">
       <a href="#servicios">Servicios</a>
+      <div class="nav-mobile__sub">
+        <a href="#diagnostico">Diagnóstico tecnológico</a>
+        <a href="servicios/aplicaciones-web.html">Aplicaciones y sitios web</a>
+        <a href="servicios/automatizaciones.html">Automatizaciones e integraciones</a>
+        <a href="servicios/dashboards.html">Dashboards y herramientas internas</a>
+        <a href="servicios/ia-procesos.html">IA aplicada a procesos</a>
+      </div>
       <a href="#trabajos">Trabajos</a>
       <a href="#casos">Casos</a>
       <a href="#diagnostico">Diagnóstico</a>
@@ -176,6 +211,7 @@
           </div>
           <div class="service-row__body">
             <p>Desarrollamos paneles, catálogos, cotizadores, sistemas de pedidos, CRMs a medida y portales internos para operar con claridad y datos en tiempo real. Para negocios que crecieron con Excel y ya necesitan software de verdad.</p>
+            <a href="servicios/dashboards.html" class="service-row__link">Ver servicio →</a>
           </div>
         </div>
 
@@ -198,6 +234,7 @@
           </div>
           <div class="service-row__body">
             <p>Integramos inteligencia artificial dentro de tu software, en procesos reales: asistentes, formularios inteligentes, clasificación de leads, análisis de información y automatización de tareas repetitivas. IA que hace trabajo, no IA por moda.</p>
+            <a href="servicios/ia-procesos.html" class="service-row__link">Ver servicio →</a>
           </div>
         </div>
 

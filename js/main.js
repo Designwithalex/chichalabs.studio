@@ -11,6 +11,7 @@
 
   function init() {
     initNav();
+    initNavDropdown();
     initMobileNav();
     initHeroCanvas();
     if (!prefersReducedMotion && window.gsap && window.ScrollTrigger) {
@@ -34,6 +35,65 @@
     window.addEventListener('scroll', () => {
       nav.classList.toggle('nav--scrolled', window.scrollY > 24);
     }, { passive: true });
+  }
+
+  /* ============================================================
+     NAV DROPDOWN — menú de servicios (desktop)
+     Abre por hover y por click/teclado. El hover pasa por el mismo
+     open()/close() que el click para que aria-expanded no se desincronice.
+  ============================================================ */
+  function initNavDropdown() {
+    document.querySelectorAll('[data-nav-dropdown]').forEach((root) => {
+      const toggle = root.querySelector('.nav__dropdown-toggle');
+      const menu   = root.querySelector('.nav__menu');
+      if (!toggle || !menu) return;
+
+      let closeTimer = null;
+
+      function open() {
+        clearTimeout(closeTimer);
+        root.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+
+      function close() {
+        clearTimeout(closeTimer);
+        root.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      /* Cierre diferido: da margen para llegar del botón al panel sin que
+         parpadee si el puntero cruza un borde por un instante. */
+      function closeSoon() {
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(close, 140);
+      }
+
+      toggle.addEventListener('click', () => {
+        root.classList.contains('is-open') ? close() : open();
+      });
+
+      root.addEventListener('mouseenter', open);
+      root.addEventListener('mouseleave', closeSoon);
+
+      /* No se abre con el solo hecho de recibir foco: al tabular por el nav
+         obligaría a atravesar los 6 links del menú para llegar a "Trabajos".
+         Se abre con Enter/Espacio (click) y se cierra al salir con Tab. */
+      root.addEventListener('focusout', () => {
+        if (!root.contains(document.activeElement)) close();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && root.classList.contains('is-open')) {
+          close();
+          toggle.focus();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!root.contains(e.target)) close();
+      });
+    });
   }
 
   /* ============================================================
