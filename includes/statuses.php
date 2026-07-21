@@ -20,6 +20,13 @@ const PROPOSAL_STATUS_LABELS = [
     'vencida'  => 'Vencida',
 ];
 
+/**
+ * Tipo de cambio de referencia USD → ARS, usado como valor por defecto al
+ * marcar una propuesta como "cliente argentino". Cada propuesta guarda el
+ * suyo en `proposals.fx_rate`, así que cambiar esto no altera las ya emitidas.
+ */
+const DEFAULT_USD_ARS = 1520;
+
 /** Los 5 pasos del método, para el portal de clientes. */
 const METHOD_STEPS = ['Diagnóstico', 'Estrategia', 'Diseño', 'Desarrollo', 'Implementación'];
 

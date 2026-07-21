@@ -100,6 +100,9 @@
 .admin-form--inline { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: var(--ad-s-3); }
 .admin-form--inline label { flex: 1; min-width: 12rem; }
 .admin-form label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem; font-weight: 500; color: var(--ad-ink); }
+/* `.admin-form label` fija display:flex, que le gana al [hidden] del navegador:
+   sin esto, ocultar un campo con el atributo hidden no tendría efecto. */
+.admin-form [hidden] { display: none; }
 .admin-cols { display: grid; grid-template-columns: 1fr; gap: var(--ad-s-4); }
 @media (min-width: 640px) { .admin-cols { grid-template-columns: 1fr 1fr; } }
 .admin-cols--id { grid-template-columns: 1fr; }

@@ -55,17 +55,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'update_proposal') {
         $hourlyRate = (float) ($_POST['hourly_rate'] ?? 0);
-        $fxRate     = (float) ($_POST['fx_rate'] ?? 0);
-        $secondary  = trim((string) ($_POST['secondary_currency'] ?? ''));
-        /* La moneda secundaria solo tiene sentido con un tipo de cambio cargado
-           (y viceversa): si falta uno de los dos, se guardan ambos en NULL. */
-        $hasSecondary = $secondary !== '' && $fxRate > 0;
+        /* Cliente argentino: además del precio en la moneda de la propuesta se
+           muestra el equivalente en ARS. Sin tipo de cambio cargado se usa el
+           de referencia; al destildarlo se limpian las dos columnas. */
+        $showArs = isset($_POST['show_ars']);
+        $fxRate  = (float) ($_POST['fx_rate'] ?? 0);
+        if ($fxRate <= 0) { $fxRate = DEFAULT_USD_ARS; }
         $stmt = $pdo->prepare('UPDATE proposals SET title = ?, currency = ?, secondary_currency = ?, fx_rate = ?, hourly_rate = ?, payment_terms = ?, validity_days = ?, general_notes = ? WHERE id = ?');
         $stmt->execute([
             trim((string) ($_POST['title'] ?? '')),
             trim((string) ($_POST['currency'] ?? '')) ?: 'ARS',
-            $hasSecondary ? $secondary : null,
-            $hasSecondary ? $fxRate : null,
+            $showArs ? 'ARS' : null,
+            $showArs ? $fxRate : null,
             $hourlyRate > 0 ? $hourlyRate : null,
             trim((string) ($_POST['payment_terms'] ?? '')) ?: null,
             (int) ($_POST['validity_days'] ?? 15),
@@ -265,17 +266,31 @@ require __DIR__ . '/inc/header.php';
           <label>Valor hora <input type="number" name="hourly_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['hourly_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 30"></label>
         </div>
         <p class="admin-hint">El precio de cada módulo se calcula como <strong>valor hora × horas</strong>. Al guardar, se recalculan todos los módulos con este valor.</p>
-        <div class="admin-cols">
-          <label>Moneda secundaria <input type="text" name="secondary_currency" value="<?= htmlspecialchars((string) ($proposal['secondary_currency'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: ARS (opcional)"></label>
-          <label>Tipo de cambio <input type="number" name="fx_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['fx_rate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="Ej: 1520"></label>
-        </div>
-        <p class="admin-hint">Opcional: si cargás las dos, cada precio se muestra también en la moneda secundaria (<strong>precio × tipo de cambio</strong>). Los totales aceptados se siguen guardando en la moneda principal.</p>
+        <?php $showArs = !empty($proposal['secondary_currency']); ?>
+        <label class="admin-check"><input type="checkbox" name="show_ars" id="show-ars" <?= $showArs ? 'checked' : '' ?>> Cliente argentino — mostrar también el precio en pesos</label>
+        <label class="admin-field--sm" id="fx-rate-row" <?= $showArs ? '' : 'hidden' ?>>Cotización del dólar
+          <input type="number" name="fx_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['fx_rate'] ?? DEFAULT_USD_ARS), ENT_QUOTES, 'UTF-8') ?>">
+        </label>
+        <p class="admin-hint" id="fx-rate-hint" <?= $showArs ? '' : 'hidden' ?>>Cada precio se muestra además en ARS (<strong>precio × cotización</strong>). La cotización queda guardada en esta propuesta, así que actualizarla no cambia las ya emitidas. Los totales aceptados se siguen guardando en la moneda principal.</p>
         <label>Condiciones de pago <textarea name="payment_terms" rows="2"><?= htmlspecialchars((string) $proposal['payment_terms'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
         <label class="admin-field--sm">Validez (días) <input type="number" name="validity_days" min="1" value="<?= (int) $proposal['validity_days'] ?>" required></label>
         <label>Notas generales <textarea name="general_notes" rows="2"><?= htmlspecialchars((string) $proposal['general_notes'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
         <button type="submit" class="btn btn--ghost">Guardar datos</button>
       </form>
     </section>
+
+    <script>
+    (function () {
+      var cb = document.getElementById('show-ars');
+      if (!cb) return;
+      var toggled = ['fx-rate-row', 'fx-rate-hint'].map(function (id) {
+        return document.getElementById(id);
+      }).filter(Boolean);
+      cb.addEventListener('change', function () {
+        toggled.forEach(function (el) { el.hidden = !cb.checked; });
+      });
+    })();
+    </script>
 
     <section class="admin-section">
       <h2><?= $editModule ? 'Editar módulo' : 'Nuevo módulo' ?></h2>
