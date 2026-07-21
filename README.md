@@ -79,7 +79,8 @@ Subir el contenido de `chichalabs-studio-landing/` a la raíz del dominio. No ha
 chichalabs-studio-landing/
   index.html          — toda la landing (copy literal de chichalabs__copy_contexto_web.md sec. 12)
   css/
-    styles.css        — sistema Terminal Claro completo
+    tokens.css        — design system "Dark Premium" (fuente de verdad, ver DESIGN-SYSTEM.md)
+    styles.css        — landing + estilos base (usa los tokens)
   js/
     main.js           — canvas hero, GSAP reveals, animaciones de íconos, count-up, marquee
   assets/
@@ -91,14 +92,18 @@ chichalabs-studio-landing/
 
 ---
 
-## Sistema visual — Terminal Claro
+## Sistema visual — Dark Premium
 
-| Token | Valor |
-|---|---|
-| `--green` | `#00BF63` |
-| `--black` | `#0B0B0B` |
-| `--bg`    | `#F7F7F7` |
-| `--font-display` | `'DharmaGothicE', 'Anton', 'Oswald', sans-serif` |
-| `--font-body` | `'Inter', sans-serif` |
+El sistema está documentado en detalle en **[`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md)**. Resumen:
 
-Regla fija: **fondo siempre `#F7F7F7`**, sin excepciones. No hay secciones oscuras.
+| Token | Valor | |
+|---|---|---|
+| `--bg` | `#0A0A0B` | Fondo base (negro por capas) |
+| `--ink` | `#F5F6F7` | Títulos |
+| `--ink-2` | `#A1A1AA` | Cuerpo |
+| `--green` | `#2CE58B` | Único acento saturado (CTAs, foco, activos) |
+| `--font-display` | `'Inter Tight', 'Inter', sans-serif` | Titulares (sentence case) |
+| `--font-body` | `'Inter', sans-serif` | Cuerpo |
+| `--font-mono` | `'JetBrains Mono', monospace` | Eyebrows y datos |
+
+Los tokens viven en `css/tokens.css` (fuente de verdad compartida por landing, portal y admin) y se linkean **antes** que la hoja de cada superficie.
