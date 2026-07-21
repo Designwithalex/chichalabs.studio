@@ -27,6 +27,13 @@ const PROPOSAL_STATUS_LABELS = [
  */
 const DEFAULT_USD_ARS = 1520;
 
+/**
+ * Días que vive un link de acceso al portal. Son reutilizables, así que el
+ * cliente puede volver al mismo link del mail mientras la propuesta esté
+ * vigente en lugar de tener que pedir uno nuevo cada vez.
+ */
+const MAGIC_LINK_DAYS = 30;
+
 /** Los 5 pasos del método, para el portal de clientes. */
 const METHOD_STEPS = ['Diagnóstico', 'Estrategia', 'Diseño', 'Desarrollo', 'Implementación'];
 

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth-portal.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/magic-link.php';
 
 portal_session_start();
 
@@ -50,15 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $client = $stmt->fetch();
 
         if ($client) {
-            $token     = bin2hex(random_bytes(32));
-            $tokenHash = hash('sha256', $token);
-            $expiresAt = (new DateTimeImmutable('+20 minutes'))->format('Y-m-d H:i:s');
-
-            $stmt = $pdo->prepare('INSERT INTO magic_link_tokens (client_id, token_hash, expires_at) VALUES (?, ?, ?)');
-            $stmt->execute([$client['id'], $tokenHash, $expiresAt]);
-
-            $loginUrl = PORTAL_BASE_URL . '/login.php?token=' . $token;
-            send_magic_link_mail($client['email'], $client['name'], $loginUrl);
+            $token = magic_link_create($pdo, (int) $client['id']);
+            send_magic_link_mail($client['email'], $client['name'], magic_link_url($token));
         }
 
         // Mensaje genérico exista o no el cliente — no confirmamos ni negamos.

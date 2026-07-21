@@ -5,6 +5,8 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth-admin.php';
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/statuses.php';
+require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/magic-link.php';
 
 admin_session_start();
 admin_require_auth();
@@ -16,7 +18,8 @@ $proposalId = (int) ($_GET['id'] ?? 0);
 function load_proposal(PDO $pdo, int $id): ?array
 {
     $stmt = $pdo->prepare(
-        'SELECT p.*, pr.name AS project_name, pr.id AS project_id, c.name AS client_name, c.id AS client_id
+        'SELECT p.*, pr.name AS project_name, pr.id AS project_id,
+                c.name AS client_name, c.id AS client_id, c.email AS client_email
          FROM proposals p
          JOIN projects pr ON pr.id = p.project_id
          JOIN clients c ON c.id = pr.client_id
@@ -46,12 +49,41 @@ $isAccepted = $proposal['status'] === 'aceptada';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_require();
 
-    if ($isAccepted) {
+    $action = (string) ($_POST['action'] ?? '');
+
+    /* Generar o enviar el link de acceso se permite siempre, incluso con la
+       propuesta aceptada: el cliente puede querer volver a verla. */
+    if ($action === 'generate_access_link' || $action === 'send_proposal_link') {
+        $token = magic_link_create($pdo, (int) $proposal['client_id']);
+        $url   = magic_link_url($token, '/portal/propuesta.php?id=' . $proposalId);
+
+        /* Al cliente un borrador le da 404, así que compartir el link implica
+           darla por enviada. */
+        if ($proposal['status'] === 'borrador') {
+            $pdo->prepare("UPDATE proposals SET status = 'enviada', sent_at = NOW() WHERE id = ?")
+                ->execute([$proposalId]);
+        }
+
+        if ($action === 'send_proposal_link') {
+            $to = trim((string) $proposal['client_email']);
+            if ($to === '') {
+                $_SESSION['flash'] = ['error', 'El cliente no tiene email cargado. Copiá el link y mandáselo a mano.'];
+            } elseif (send_proposal_link_mail($to, $proposal['client_name'], $proposal['title'], $url)) {
+                $_SESSION['flash'] = ['ok', 'Link enviado a ' . $to . '.'];
+            } else {
+                $_SESSION['flash'] = ['error', 'No pudimos enviar el mail. Copiá el link y mandáselo a mano.'];
+            }
+        }
+
+        $_SESSION['flash_link'] = $url;
         header('Location: /admin/propuesta-editor.php?id=' . $proposalId);
         exit;
     }
 
-    $action = (string) ($_POST['action'] ?? '');
+    if ($isAccepted) {
+        header('Location: /admin/propuesta-editor.php?id=' . $proposalId);
+        exit;
+    }
 
     if ($action === 'update_proposal') {
         $hourlyRate = (float) ($_POST['hourly_rate'] ?? 0);
@@ -173,8 +205,6 @@ foreach ($modules as $m) {
 }
 $rangeStatus = $hasRelevantModule && $allClosed ? 'Precio cerrado' : 'En rango';
 
-$proposalUrl = PORTAL_BASE_URL . '/propuesta.php?id=' . $proposalId;
-
 $jsModules = array_map(static function (array $m): array {
     return [
         'id'                 => (int) $m['id'],
@@ -205,6 +235,13 @@ $jsMeta = [
     'general_notes' => $proposal['general_notes'],
 ];
 
+/* Flash de un solo uso: resultado del envío y último link generado. */
+$flash     = $_SESSION['flash'] ?? null;
+$flashLink = $_SESSION['flash_link'] ?? null;
+unset($_SESSION['flash'], $_SESSION['flash_link']);
+
+$clientEmail = trim((string) $proposal['client_email']);
+
 $pageTitle = $proposal['title'];
 require __DIR__ . '/inc/header.php';
 ?>
@@ -222,6 +259,41 @@ require __DIR__ . '/inc/header.php';
     <span class="admin-badge admin-badge--range"><?= htmlspecialchars($rangeStatus, ENT_QUOTES, 'UTF-8') ?></span>
   </div>
 
+  <div class="admin-panel">
+    <div class="admin-panel__row">
+      <div class="admin-panel__link">
+        <span class="admin-panel__link-label">Link de acceso para el cliente</span>
+        <p class="admin-muted">Entra al portal sin contraseña y abre esta propuesta directamente. Sirve por <?= MAGIC_LINK_DAYS ?> días y se puede abrir todas las veces que haga falta.</p>
+      </div>
+      <div class="admin-form__actions">
+        <form method="POST">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="send_proposal_link">
+          <button type="submit" class="btn btn--ghost" <?= $clientEmail === '' ? 'disabled' : '' ?>>
+            <?= $clientEmail !== '' ? 'Enviar a ' . htmlspecialchars($clientEmail, ENT_QUOTES, 'UTF-8') : 'El cliente no tiene email' ?>
+          </button>
+        </form>
+        <form method="POST">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="generate_access_link">
+          <button type="submit" class="btn btn--text">Generar link para copiar</button>
+        </form>
+      </div>
+    </div>
+
+    <?php if ($flash): ?>
+      <p class="admin-alert <?= $flash[0] === 'ok' ? 'admin-alert--ok' : '' ?>"><?= htmlspecialchars((string) $flash[1], ENT_QUOTES, 'UTF-8') ?></p>
+    <?php endif; ?>
+
+    <?php if ($flashLink): ?>
+      <div class="admin-linkbox-row">
+        <a class="admin-linkbox" href="<?= htmlspecialchars($flashLink, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($flashLink, ENT_QUOTES, 'UTF-8') ?></a>
+        <button type="button" class="btn btn--ghost admin-copy-link" data-copy="<?= htmlspecialchars($flashLink, ENT_QUOTES, 'UTF-8') ?>">Copiar link</button>
+      </div>
+      <p class="admin-muted">Se muestra una sola vez: si recargás la página y lo perdés, generá otro.</p>
+    <?php endif; ?>
+  </div>
+
   <?php if ($isAccepted): ?>
     <div class="admin-panel admin-panel--accepted">
       <p><strong>Esta propuesta ya fue aceptada</strong> el <?= htmlspecialchars((string) $proposal['accepted_at'], ENT_QUOTES, 'UTF-8') ?> — quedó en solo lectura.</p>
@@ -233,25 +305,20 @@ require __DIR__ . '/inc/header.php';
     <div class="admin-panel">
       <div class="admin-panel__row">
         <div class="admin-panel__link">
-          <span class="admin-panel__link-label">Link para el cliente</span>
-          <div class="admin-linkbox-row">
-            <a class="admin-linkbox" href="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?></a>
-            <button type="button" class="btn btn--ghost admin-copy-link" data-copy="<?= htmlspecialchars($proposalUrl, ENT_QUOTES, 'UTF-8') ?>">Copiar link</button>
-          </div>
+          <span class="admin-panel__link-label">Estado</span>
+          <p class="admin-muted">
+            <?= $proposal['status'] === 'borrador'
+                ? 'En borrador: el cliente todavía no la puede ver. Enviarle el link la marca como enviada automáticamente.'
+                : 'Enviada el ' . htmlspecialchars((string) $proposal['sent_at'], ENT_QUOTES, 'UTF-8') . '. La validez de ' . (int) $proposal['validity_days'] . ' días se cuenta desde esa fecha.' ?>
+          </p>
         </div>
-        <?php if ($proposal['status'] === 'borrador'): ?>
-          <form method="POST">
-            <?= csrf_field() ?>
-            <input type="hidden" name="action" value="mark_sent">
-            <button type="submit" class="btn btn--ghost">Marcar como enviada</button>
-          </form>
-        <?php else: ?>
-          <form method="POST">
-            <?= csrf_field() ?>
-            <input type="hidden" name="action" value="mark_sent">
-            <button type="submit" class="btn btn--text">Reenviar (renueva validez desde hoy)</button>
-          </form>
-        <?php endif; ?>
+        <form method="POST">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="mark_sent">
+          <button type="submit" class="btn btn--text">
+            <?= $proposal['status'] === 'borrador' ? 'Marcar como enviada' : 'Renovar validez desde hoy' ?>
+          </button>
+        </form>
       </div>
     </div>
 
@@ -269,7 +336,7 @@ require __DIR__ . '/inc/header.php';
         <?php $showArs = !empty($proposal['secondary_currency']); ?>
         <label class="admin-check"><input type="checkbox" name="show_ars" id="show-ars" <?= $showArs ? 'checked' : '' ?>> Cliente argentino — mostrar también el precio en pesos</label>
         <label class="admin-field--sm" id="fx-rate-row" <?= $showArs ? '' : 'hidden' ?>>Cotización del dólar
-          <input type="number" name="fx_rate" step="any" min="0" value="<?= htmlspecialchars((string) ($proposal['fx_rate'] ?? DEFAULT_USD_ARS), ENT_QUOTES, 'UTF-8') ?>">
+          <input type="number" name="fx_rate" step="any" min="0" value="<?= htmlspecialchars((string) (float) ($proposal['fx_rate'] ?? DEFAULT_USD_ARS), ENT_QUOTES, 'UTF-8') ?>">
         </label>
         <p class="admin-hint" id="fx-rate-hint" <?= $showArs ? '' : 'hidden' ?>>Cada precio se muestra además en ARS (<strong>precio × cotización</strong>). La cotización queda guardada en esta propuesta, así que actualizarla no cambia las ya emitidas. Los totales aceptados se siguen guardando en la moneda principal.</p>
         <label>Condiciones de pago <textarea name="payment_terms" rows="2"><?= htmlspecialchars((string) $proposal['payment_terms'], ENT_QUOTES, 'UTF-8') ?></textarea></label>
