@@ -1,0 +1,41 @@
+name: Deploy to Hostinger
+
+# Auto-deploy: every push to main syncs the repo into the Hostinger public_html
+# folder over FTP. The server keeps its own config/config.php (real secrets) and
+# any dev-only files are never uploaded — see the `exclude` list below.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allows manual "Run workflow" from the Actions tab
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftp
+          port: 21
+          server-dir: /public_html/
+          # Files/dirs that must NEVER be pushed or deleted on the server.
+          # config/config.php holds the live DB/SMTP secrets and lives only on
+          # the server; excluding it keeps the sync from touching it.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.claude/**
+            config/config.php
+            .deploy.env
+            .gitignore
+            README.md
+            *.py
+            sql/**
