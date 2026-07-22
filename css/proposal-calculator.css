@@ -214,5 +214,4 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pc-modal, .pc-modal__panel { transition: none; }
-  .pc-module__checkbox::before { transition: none; }
 }
