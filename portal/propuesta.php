@@ -74,7 +74,7 @@ require __DIR__ . '/inc/header.php';
 
     <div class="pc-categories">
       <?php foreach ($selection as $m): ?>
-        <div class="pc-module pc-module--locked">
+        <div class="pc-module">
           <span class="pc-module__body">
             <span class="pc-module__head">
               <span class="pc-module__num">Módulo <?= str_pad((string) ($m['module_number'] ?? ''), 2, '0', STR_PAD_LEFT) ?></span>
@@ -122,8 +122,6 @@ require __DIR__ . '/inc/header.php';
             'delivery_estimate'  => $m['delivery_estimate'],
             'notes'              => $m['notes'],
             'external_cost_note' => $m['external_cost_note'],
-            'is_locked'          => (bool) $m['is_locked'],
-            'default_checked'    => (bool) $m['default_checked'],
         ];
     }, $modules);
 

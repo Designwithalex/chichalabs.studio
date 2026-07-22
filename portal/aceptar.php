@@ -72,28 +72,19 @@ if ($proposal['sent_at'] !== null) {
     }
 }
 
-$stmt = $pdo->prepare('SELECT * FROM proposal_modules WHERE proposal_id = ?');
+/* La propuesta se acepta entera: ya no hay módulos opcionales que elegir.
+   La selección sale de la base, nunca del POST. */
+$stmt = $pdo->prepare('SELECT * FROM proposal_modules WHERE proposal_id = ? ORDER BY sort_order ASC, module_number ASC');
 $stmt->execute([$proposalId]);
-$allModules = $stmt->fetchAll();
-
-$submittedIds = array_map('intval', (array) ($_POST['module_ids'] ?? []));
-
-$selected = [];
-foreach ($allModules as $m) {
-    /* Los módulos obligatorios siempre entran — nunca confiamos en el POST para esto,
-       podría haber sido manipulado en el cliente. */
-    if ($m['is_locked'] || in_array((int) $m['id'], $submittedIds, true)) {
-        $selected[] = $m;
-    }
-}
+$selected = $stmt->fetchAll();
 
 if (!$selected) {
     reject_proposal($proposalId);
 }
 
 /* El precio final se recalcula acá, contra la base — nunca se confía en un número
-   que venga del navegador. Mientras algún módulo seleccionado tenga rango abierto,
-   no se puede aceptar (el frontend ya lo impide, esto es la validación real). */
+   que venga del navegador. Mientras algún módulo tenga rango abierto, no se puede
+   aceptar (el frontend ya lo impide, esto es la validación real). */
 foreach ($selected as $m) {
     if ((float) $m['price_min'] !== (float) $m['price_max']) {
         reject_proposal($proposalId);

@@ -22,7 +22,9 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* ── Módulo = tarjeta seleccionable ── */
+/* ── Módulo = tarjeta informativa ──
+   Todo lo que aparece está incluido: no hay nada que tildar ni que elegir,
+   así que la tarjeta no debe insinuar que es interactiva. */
 .pc-module {
   display: flex;
   align-items: flex-start;
@@ -32,60 +34,6 @@
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-1);
-  cursor: pointer;
-  transition: border-color var(--t-mid), background var(--t-mid), box-shadow var(--t-mid);
-}
-.pc-module:hover { border-color: var(--line-strong); background: var(--surface-2); }
-
-/* Seleccionado → resalte verde (como elegir una opción de producto) */
-.pc-module:has(.pc-module__checkbox:checked) {
-  border-color: var(--green-line);
-  background: var(--green-wash);
-  box-shadow: inset 0 0 0 1px var(--green-line);
-}
-
-/* Custom checkbox */
-.pc-module__checkbox {
-  appearance: none;
-  -webkit-appearance: none;
-  margin-top: 0.15rem;
-  width: 1.3rem; height: 1.3rem;
-  flex-shrink: 0;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 6px;
-  background: var(--surface-2);
-  cursor: pointer;
-  display: grid;
-  place-content: center;
-  transition: background var(--t-fast), border-color var(--t-fast);
-}
-.pc-module__checkbox::before {
-  content: '';
-  width: 0.72rem; height: 0.72rem;
-  background: var(--ink-on-accent);
-  clip-path: polygon(41% 66%, 84% 22%, 93% 31%, 41% 84%, 8% 51%, 17% 42%);
-  transform: scale(0);
-  transition: transform var(--t-fast) var(--ease-out-quint);
-}
-.pc-module__checkbox:checked { background: var(--green); border-color: var(--green); }
-.pc-module__checkbox:checked::before { transform: scale(1); }
-.pc-module__checkbox:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--green-wash); }
-
-/* Bloqueado (obligatorio) */
-.pc-module--locked { cursor: default; }
-.pc-module--locked .pc-module__checkbox { cursor: not-allowed; opacity: 0.85; }
-.pc-module--locked .pc-module__name::after {
-  content: 'Incluido';
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  padding: 0.1rem 0.45rem;
-  margin-left: 0.5rem;
-  vertical-align: middle;
 }
 
 .pc-module__body { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }

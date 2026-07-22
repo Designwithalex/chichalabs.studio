@@ -128,8 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             trim((string) ($_POST['delivery_estimate'] ?? '')) ?: null,
             trim((string) ($_POST['notes'] ?? '')) ?: null,
             trim((string) ($_POST['external_cost_note'] ?? '')) ?: null,
-            isset($_POST['is_locked']) ? 1 : 0,
-            isset($_POST['default_checked']) ? 1 : 0,
+            /* Todo módulo cargado forma parte de la propuesta: ya no hay opcionales.
+               Las columnas quedan en la base por compatibilidad, siempre en 1. */
+            1,
+            1,
             $moduleNumber,
         ];
 
@@ -195,15 +197,13 @@ if ($editModuleId) {
 $nextModuleNumber = 1;
 foreach ($modules as $m) { $nextModuleNumber = max($nextModuleNumber, (int) $m['module_number'] + 1); }
 
+/* Todos los módulos entran en el total, así que basta con que uno tenga rango
+   abierto para que el precio no esté cerrado y el cliente no pueda aceptar. */
 $allClosed = true;
-$hasRelevantModule = false;
 foreach ($modules as $m) {
-    if ($m['is_locked'] || $m['default_checked']) {
-        $hasRelevantModule = true;
-        if ((float) $m['price_min'] !== (float) $m['price_max']) { $allClosed = false; }
-    }
+    if ((float) $m['price_min'] !== (float) $m['price_max']) { $allClosed = false; }
 }
-$rangeStatus = $hasRelevantModule && $allClosed ? 'Precio cerrado' : 'En rango';
+$rangeStatus = $modules && $allClosed ? 'Precio cerrado' : 'En rango';
 
 $jsModules = array_map(static function (array $m): array {
     return [
@@ -218,8 +218,6 @@ $jsModules = array_map(static function (array $m): array {
         'delivery_estimate'  => $m['delivery_estimate'],
         'notes'              => $m['notes'],
         'external_cost_note' => $m['external_cost_note'],
-        'is_locked'          => (bool) $m['is_locked'],
-        'default_checked'    => (bool) $m['default_checked'],
     ];
 }, $modules);
 
@@ -393,11 +391,6 @@ require __DIR__ . '/inc/header.php';
           <label>Nota opcional <textarea name="notes" rows="2"><?= htmlspecialchars($editModule['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
           <label>Costo externo opcional <textarea name="external_cost_note" rows="2"><?= htmlspecialchars($editModule['external_cost_note'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></label>
         </div>
-        <div class="admin-cols admin-check-row">
-          <label class="admin-check"><input type="checkbox" name="is_locked" <?= !empty($editModule['is_locked']) ? 'checked' : '' ?>> Obligatorio (el cliente no lo puede destildar)</label>
-          <label class="admin-check"><input type="checkbox" name="default_checked" <?= ($editModule === null || !empty($editModule['default_checked'])) ? 'checked' : '' ?>> Tildado por defecto</label>
-        </div>
-
         <div class="admin-form__actions">
           <button type="submit" class="btn btn--ghost"><?= $editModule ? 'Guardar cambios' : 'Agregar módulo' ?></button>
           <?php if ($editModule): ?><a href="/admin/propuesta-editor.php?id=<?= $proposalId ?>" class="btn btn--text">Cancelar</a><?php endif; ?>
@@ -435,7 +428,7 @@ require __DIR__ . '/inc/header.php';
       <div class="admin-table-wrap">
       <table class="admin-table">
         <thead>
-          <tr><th class="admin-cell-idx">#</th><th>Nombre</th><th>Categoría</th><th class="admin-num">Horas</th><th class="admin-num">Precio</th><th>Cobro</th><th>Obligatorio</th><th class="admin-num"><span class="admin-sr-only">Acciones</span></th></tr>
+          <tr><th class="admin-cell-idx">#</th><th>Nombre</th><th>Categoría</th><th class="admin-num">Horas</th><th class="admin-num">Precio</th><th>Cobro</th><th class="admin-num"><span class="admin-sr-only">Acciones</span></th></tr>
         </thead>
         <tbody>
           <?php foreach ($modules as $m): ?>
@@ -446,7 +439,6 @@ require __DIR__ . '/inc/header.php';
               <td class="admin-num"><?= $m['hours'] !== null ? htmlspecialchars(rtrim(rtrim(number_format((float) $m['hours'], 2, '.', ''), '0'), '.') . ' h', ENT_QUOTES, 'UTF-8') : '—' ?></td>
               <td class="admin-num"><?= htmlspecialchars($proposal['currency'] . ' ' . number_format((float) $m['price_min'], 0, ',', '.') . (($m['price_min'] != $m['price_max']) ? ' – ' . number_format((float) $m['price_max'], 0, ',', '.') : ''), ENT_QUOTES, 'UTF-8') ?></td>
               <td><span class="admin-tag <?= $m['billing_type'] === 'monthly' ? 'admin-tag--monthly' : '' ?>"><?= $m['billing_type'] === 'monthly' ? 'Mensual' : 'Único' ?></span></td>
-              <td><span class="admin-tag <?= $m['is_locked'] ? 'admin-tag--yes' : 'admin-tag--no' ?>"><?= $m['is_locked'] ? 'Sí' : 'No' ?></span></td>
               <td class="admin-table__actions">
                 <a class="admin-table__edit" href="/admin/propuesta-editor.php?id=<?= $proposalId ?>&edit_module=<?= (int) $m['id'] ?>">Editar</a>
                 <form method="POST" onsubmit="return confirm('¿Eliminar este módulo?');">

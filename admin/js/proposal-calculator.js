@@ -27,9 +27,8 @@
 
   function init() {
     root.innerHTML = renderCategories() + renderTotals() + renderConditions() + renderCTA();
-    wireCheckboxes();
     if (interactive) wireAccept();
-    recalc();
+    paintTotals();
   }
 
   /* ============================================================
@@ -51,9 +50,9 @@
     }).join('') + '</div>';
   }
 
+  /* Todos los módulos forman parte de la propuesta: no hay nada que tildar.
+     La selección opcional se sacó porque no se entendía qué era obligatorio. */
   function renderModule(m) {
-    var checked = m.is_locked || m.default_checked;
-    var locked  = !!m.is_locked;
     var perMonth   = m.billing_type === 'monthly' ? ' / mes' : '';
     var priceLabel = formatRange(m.price_min, m.price_max) + perMonth;
     var priceAlt   = formatAlt(m.price_min, m.price_max);
@@ -63,18 +62,9 @@
       .map(function (l) { return l.trim().replace(/^-\s*/, ''); })
       .filter(Boolean);
 
-    /* En el flujo interactivo (portal, no vencida) los módulos bloqueados NO usan
-       `disabled`: un checkbox disabled no viaja en el POST del form, y necesitamos
-       que su id siempre llegue a aceptar.php. Fuera de ese flujo (admin / vencida)
-       da lo mismo, así que ahí sí usamos `disabled` nativo. */
     return (
-      '<label class="pc-module' + (locked ? ' pc-module--locked' : '') + '">' +
-        '<input type="checkbox" class="pc-module__checkbox" data-module-id="' + m.id + '"' +
-          (locked && interactive ? ' data-locked="1"' : '') +
-          (locked && !interactive ? ' disabled' : '') +
-          (checked ? ' checked' : '') +
-          (interactive ? ' name="module_ids[]" value="' + m.id + '"' : '') + '>' +
-        '<span class="pc-module__body">' +
+      '<div class="pc-module">' +
+        '<div class="pc-module__body">' +
           '<span class="pc-module__head">' +
             '<span class="pc-module__num">Módulo ' + String(m.module_number).padStart(2, '0') + '</span>' +
             '<span class="pc-module__name">' + esc(m.name) + '</span>' +
@@ -86,8 +76,8 @@
           (m.delivery_estimate ? '<p class="pc-module__delivery">Entrega estimada: ' + esc(m.delivery_estimate) + '</p>' : '') +
           (m.notes ? '<p class="pc-module__notes">' + esc(m.notes) + '</p>' : '') +
           (m.external_cost_note ? '<p class="pc-module__external">⚠ Costo externo, aparte: ' + esc(m.external_cost_note) + '</p>' : '') +
-        '</span>' +
-      '</label>'
+        '</div>' +
+      '</div>'
     );
   }
 
@@ -141,7 +131,7 @@
       '<div class="pc-modal" id="pc-modal" aria-hidden="true">' +
         '<div class="pc-modal__panel" role="dialog" aria-modal="true" aria-labelledby="pc-modal-title">' +
           '<p class="pc-modal__title" id="pc-modal-title">¿Confirmás la propuesta?</p>' +
-          '<p class="pc-modal__body">Una vez aceptada, no se puede modificar la selección de módulos.</p>' +
+          '<p class="pc-modal__body">Una vez aceptada, la propuesta queda cerrada y no se puede modificar.</p>' +
           '<div class="pc-modal__actions">' +
             '<button type="button" class="btn btn--text" id="pc-modal-cancel">Cancelar</button>' +
             '<button type="button" class="btn btn--ghost" id="pc-modal-confirm">Sí, aceptar</button>' +
@@ -154,16 +144,13 @@
   /* ============================================================
      CÁLCULO
   ============================================================ */
-  function recalc() {
-    var checkedIds = getCheckedIds();
-    var checkedModules = MODULES.filter(function (m) { return checkedIds.indexOf(m.id) !== -1; });
+  function paintTotals() {
+    renderTotalRow('pc-total-once', MODULES.filter(function (m) { return m.billing_type === 'once'; }), 'Costo único');
+    renderTotalRow('pc-total-monthly', MODULES.filter(function (m) { return m.billing_type === 'monthly'; }), 'Costo mensual');
 
-    renderTotalRow('pc-total-once', checkedModules.filter(function (m) { return m.billing_type === 'once'; }), 'Costo único');
-    renderTotalRow('pc-total-monthly', checkedModules.filter(function (m) { return m.billing_type === 'monthly'; }), 'Costo mensual');
-
-    var allClosed = checkedModules.every(function (m) { return Number(m.price_min) === Number(m.price_max); });
-    var hasSelection = checkedModules.length > 0;
-    toggleCTA(hasSelection && allClosed);
+    /* Con algún módulo de precio abierto todavía no hay nada que aceptar. */
+    var allClosed = MODULES.every(function (m) { return Number(m.price_min) === Number(m.price_max); });
+    toggleCTA(MODULES.length > 0 && allClosed);
   }
 
   function renderTotalRow(elId, mods, label) {
@@ -187,29 +174,9 @@
     accept.hidden = !showAccept;
   }
 
-  function getCheckedIds() {
-    return Array.prototype.slice.call(root.querySelectorAll('.pc-module__checkbox'))
-      .filter(function (cb) { return cb.checked; })
-      .map(function (cb) { return Number(cb.getAttribute('data-module-id')); });
-  }
-
   /* ============================================================
      EVENTOS
   ============================================================ */
-  function wireCheckboxes() {
-    root.querySelectorAll('.pc-module__checkbox').forEach(function (cb) {
-      if (cb.disabled) return;
-      if (cb.getAttribute('data-locked') === '1') {
-        cb.addEventListener('click', function (e) { e.preventDefault(); });
-        cb.addEventListener('keydown', function (e) {
-          if (e.key === ' ' || e.key === 'Enter') e.preventDefault();
-        });
-        return;
-      }
-      cb.addEventListener('change', recalc);
-    });
-  }
-
   function wireAccept() {
     var form    = root.closest('form') || root;
     var modal   = document.getElementById('pc-modal');
