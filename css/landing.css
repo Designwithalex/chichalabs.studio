@@ -17,11 +17,13 @@
 /* ============================================================
    HERO — pain hook (the whole job of the first screen)
    ============================================================ */
+/* Columna, no fila: el grid del hero se centra en el espacio que sobra y el
+   strip de logos queda anclado al fondo, los dos dentro del mismo 100svh. */
 .lp-hero {
   min-height: 100svh;
   display: flex;
-  align-items: center;
-  padding: 8.5rem 0 4.5rem;
+  flex-direction: column;
+  padding: 8rem 0 1.5rem;
   overflow: hidden;
 }
 .lp-hero__canvas {
@@ -32,10 +34,12 @@
 .lp-hero__grid {
   position: relative;
   z-index: 2;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 1fr;
   gap: 3rem;
   align-items: center;
+  align-content: center;
 }
 @media (min-width: 940px) {
   .lp-hero__grid { grid-template-columns: 1.05fr 0.95fr; gap: 4.5rem; }
@@ -100,6 +104,56 @@
   background: var(--green);
   box-shadow: 0 0 8px var(--green-glow);
   flex-shrink: 0;
+}
+
+/* El strip de logos ahora comparte el 100svh con el hero, así que el copy tiene
+   que caber en lo que sobra. En pantallas bajas se comprime el ritmo vertical
+   en vez de empujar el strip abajo del fold. */
+/* Debajo de 940px el grid es de una columna y el mockup se apila debajo del
+   copy, sumando ~400px que empujan el strip fuera del fold. En ese layout el
+   gráfico es decorativo: el hook y el CTA son los que convierten en tráfico
+   pago. Se cae y queda copy + prueba social (strip de marcas) en la primera
+   pantalla. */
+@media (max-width: 939px) {
+  .lp-hero__visual { display: none; }
+  .lp-hero__grid { grid-template-columns: 1fr; }
+}
+
+/* El strip de logos ahora comparte el 100svh con el hero, así que el copy tiene
+   que caber en lo que sobra. En pantallas de menos de ~1100px de alto (todos
+   los portátiles y monitores 1080) se comprime el ritmo vertical en vez de
+   empujar el strip abajo del fold. */
+@media (max-height: 1100px) {
+  .lp-hero { padding: 7rem 0 1.5rem; }
+  .lp-hero__hook { font-size: clamp(2rem, 1.1rem + 3.4vw, 3.2rem); margin: 1.1rem 0; }
+  .lp-hero__solution { font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .lp-trust { margin-top: 1.2rem; }
+}
+@media (max-height: 860px) {
+  .lp-hero { padding: 6rem 0 1.1rem; }
+  .lp-hero__hook { margin: 0.8rem 0; }
+  .lp-hero__solution { font-size: 1.02rem; margin-bottom: 1rem; }
+}
+/* Altura de teléfono (≤880px): la línea de micro-confianza cede su lugar al
+   strip de marcas. Los dos son prueba social; el strip es el que se pidió
+   mostrar en la primera pantalla y pesa un renglón menos de copy. En tablet y
+   desktop (más altos) la línea de confianza se conserva. */
+@media (max-height: 880px) {
+  .lp-trust { display: none; }
+}
+@media (max-height: 810px) {
+  .lp-hero { padding: 5.25rem 0 0.9rem; }
+  .lp-hero__hook { font-size: clamp(1.8rem, 1rem + 2.6vw, 2.6rem); margin: 0.6rem 0; }
+  .lp-hero__solution { font-size: 1rem; margin-bottom: 0.9rem; }
+}
+/* Teléfonos legacy muy bajos (SE, Android viejos ≤700px): con la copy completa
+   de estas landings el strip no entra ni comprimiendo, así que el párrafo de
+   solución se recorta a 5 líneas. El hook y el CTA quedan intactos. */
+@media (max-width: 600px) and (max-height: 700px) {
+  .lp-hero__solution {
+    display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* Hero visual — reuses .mockup* from styles.css, framed + floating */

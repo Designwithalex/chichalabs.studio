@@ -416,16 +416,22 @@ body.nav-open { overflow: hidden; }
 /* ============================================================
    HERO
    ============================================================ */
+/* Columna, no fila: el copy se centra en el espacio que sobra y el strip de
+   logos queda anclado al fondo, los dos dentro del mismo 100svh. */
 .hero {
   position: relative;
   min-height: 100svh;
   display: flex;
-  align-items: center;
-  padding: 9rem 0 6rem;
+  flex-direction: column;
+  padding: 8.5rem 0 1.5rem;
   overflow: hidden;
 }
 .hero__canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.7; }
-.hero__content { position: relative; z-index: 2; }
+.hero__content {
+  position: relative; z-index: 2;
+  flex: 1 1 auto;
+  display: flex; flex-direction: column; justify-content: center;
+}
 
 .hero__eyebrow {
   display: inline-block;
@@ -463,6 +469,57 @@ body.nav-open { overflow: hidden; }
   margin-bottom: 2.5rem;
 }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+/* El strip de logos ahora comparte el 100svh con el copy, así que el copy tiene
+   que caber en lo que sobra. En pantallas bajas (portátiles de 720/768 y todos
+   los teléfonos) se comprime el ritmo vertical del hero en vez de dejar que el
+   strip se vaya abajo del fold. El título es lo que más cede: a 16ch entra en
+   4 líneas y a 21ch en 3. */
+@media (max-height: 920px) {
+  .hero { padding: 6.5rem 0 1.25rem; }
+  .hero__eyebrow { margin-bottom: 1.1rem; }
+  .hero__title {
+    font-size: clamp(2.1rem, 1.1rem + 3.1vw, 3.4rem);
+    max-width: 21ch;
+    margin-bottom: 1.1rem;
+  }
+  .hero__subtitle { font-size: 1.05rem; margin-bottom: 0.65rem; }
+  .hero__secondary { margin-bottom: 1.5rem; }
+}
+
+/* Portátiles de 720/768 y teléfonos bajos: un escalón más de compresión. */
+@media (max-height: 800px) {
+  .hero { padding: 5.75rem 0 1rem; }
+  .hero__eyebrow { margin-bottom: 0.9rem; }
+  .hero__title { margin-bottom: 0.9rem; }
+  .hero__secondary { margin-bottom: 1.25rem; }
+}
+
+/* Pantallas muy bajas (teléfonos chicos, ventanas con muchas barras): queda el
+   eyebrow, el título y los CTAs. El subtítulo sale porque es la única forma de
+   que el strip siga entrando sin achicar el título hasta hacerlo irrelevante. */
+@media (max-height: 700px) {
+  .hero { padding-top: 5.25rem; }
+  .hero__title { font-size: clamp(1.9rem, 1rem + 2.6vw, 2.9rem); margin-bottom: 0.8rem; }
+  .hero__subtitle { font-size: 1rem; margin-bottom: 1.25rem; }
+  .hero__secondary { display: none; }
+}
+
+/* En un teléfono el hero ya son tres párrafos apilados. El terciario lista las
+   categorías de servicio, que es exactamente lo que abre la sección siguiente,
+   así que ahí se cae: es el bloque que paga el lugar del strip. */
+@media (max-width: 600px) {
+  .hero { padding-top: 5.5rem; }
+  .hero__secondary { display: none; }
+}
+
+/* Teléfono chico: angosto y bajo a la vez. Cada párrafo se parte en 5-6 líneas,
+   así que el hero queda en título + CTAs + prueba social, que es el mínimo que
+   sigue funcionando como primera pantalla. */
+@media (max-width: 600px) and (max-height: 700px) {
+  .hero__subtitle { display: none; }
+  .hero__title { margin-bottom: 1.25rem; }
+}
 
 /* ============================================================
    INTRO STRIP
@@ -854,12 +911,13 @@ body.nav-open { overflow: hidden; }
 /* ============================================================
    LOGO STRIP — carrusel de logos de clientes
 
-   Los logos van sobre un chip CLARO a propósito, no sobre el fondo
-   oscuro: 8 de las 12 marcas son azules/marrones/negros y sobre
-   #0A0A0B no llegan al 4.5:1 (Cabrales 1.9:1, PACTO 2.3:1, Café la
-   Humedad 3.9:1). Sobre el chip claro cada marca se ve con su color
-   real, que es lo que hace que el usuario la reconozca. Los 4 logos
-   que venían en blanco tienen su variante -ink.png para este fondo.
+   Dos estados: en reposo, chip glass oscuro con el logo en blanco
+   translúcido; en hover, el chip pasa a blanco sólido y el logo
+   recupera su color real.
+
+   Los archivos son siempre la versión "sobre claro" (los -ink.png para
+   los 4 que venían en blanco): sirven tal cual para el hover, y el
+   filtro los pasa a blanco para el reposo.
 
    Alturas: cada chip lleva un --logo-h calculado como k/√(aspecto),
    así un logotipo muy ancho y una marca cuadrada tienen la misma
@@ -872,8 +930,16 @@ body.nav-open { overflow: hidden; }
   text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--ink-3);
 }
 
-/* Variante para el hero: sin borde ni título, pegada al hero de arriba. */
-.logo-strip--hero { padding: 0 0 1rem; border-top: 0; }
+/* Variante para el hero: vive DENTRO del hero, anclada al fondo de su 100svh.
+   Sin borde, sin padding propio y sin encogerse — el que cede espacio cuando
+   la pantalla es baja es el copy, que está centrado y tiene aire de sobra. */
+.logo-strip--hero {
+  padding: 0;
+  border-top: 0;
+  flex: 0 0 auto;
+  margin-top: 2.5rem;
+}
+.logo-strip--hero .logo-strip__head { margin-bottom: 1rem; }
 
 .logo-strip__viewport {
   overflow: hidden; position: relative;
@@ -889,40 +955,81 @@ body.nav-open { overflow: hidden; }
 }
 .logo-strip__viewport:hover .logo-strip__track { animation-play-state: paused; }
 
-/* Glass del sistema (blur, borde, highlight, radius) pero en clave CLARA.
-   El --glass-bg de los tokens es rgba(255,255,255,0.04): sobre #0A0A0B da un
-   chip #141415, y ahí Cabrales vuelve a 1.9:1. Con el fill claro el chip sigue
-   siendo translúcido — deja pasar el glow verde del fondo y el blur — y las
-   marcas oscuras se leen. */
+/* Reposo: el glass del sistema tal cual (--glass-bg sobre el fondo oscuro). */
 .logo-chip {
   --logo-h: 34px;
-  --chip-bg: rgba(255, 255, 255, 0.85);
   flex: 0 0 auto;
   display: grid; place-items: center;
   min-width: 196px; height: 92px; padding: 0 1.75rem;
-  background: var(--chip-bg);
+  background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), var(--shadow-sm);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
   transition: transform var(--t-fast) var(--ease-out-quint),
-              box-shadow var(--t-fast), background var(--t-fast);
+              background var(--t-mid), border-color var(--t-mid), box-shadow var(--t-mid);
 }
+
+/* invert + grayscale, NO brightness(0) invert(1). Aplanar a silueta borra la
+   figura/fondo interna: Café la Humedad (badge oscuro con texto claro adentro),
+   el hexágono de Chemikal y el apretón de manos de Mercado Libre quedaban como
+   manchas blancas. Invirtiendo se conserva esa estructura.
+   brightness(2) es para FieldView y Ernesto: invertidos caen en un gris medio y
+   sin eso quedan en 2.7:1 contra el chip. Con 2 el peor caso llega a 4.3:1. */
 .logo-chip img {
   display: block; width: auto; height: var(--logo-h);
   max-width: 156px; object-fit: contain;
+  filter: invert(1) grayscale(1) brightness(2);
+  opacity: 0.82;
+  transition: filter var(--t-mid) var(--ease-out-quint), opacity var(--t-mid);
 }
+
+/* Hover: chip blanco sólido y el logo con su color real. */
 .logo-chip:hover {
-  --chip-bg: rgba(255, 255, 255, 0.97);
   transform: translateY(-3px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55),
-              0 10px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--green-line);
+  background: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--green-line);
+}
+.logo-chip:hover img {
+  /* Se interpola a los valores identidad y no a `none`: filter no anima hacia
+     none y el color aparecería de golpe. */
+  filter: invert(0) grayscale(0) brightness(1);
+  opacity: 1;
+}
+
+/* Sin hover (touch) no hay forma de llegar al estado de color, y ahí cae la
+   mayor parte del tráfico de la campaña. Esos dispositivos ven directamente el
+   estado revelado: chip claro y logos con su color real. */
+@media (hover: none) {
+  .logo-chip { background: rgba(255, 255, 255, 0.88); border-color: transparent; }
+  .logo-chip img { filter: none; opacity: 1; }
 }
 
 @keyframes logo-strip-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(calc(-50% - 0.5rem)); }
+}
+
+/* Dentro del hero y con poca altura, el chip cede unos px: sigue leyéndose y
+   le devuelve ~30px al copy, que es lo que decide si el strip entra o no. */
+@media (max-height: 920px) {
+  .logo-strip--hero { margin-top: 1.25rem; }
+  .logo-strip--hero .logo-strip__head { margin-bottom: 0.6rem; }
+  .logo-strip--hero .logo-chip { height: 72px; min-width: 168px; }
+  .logo-strip--hero .logo-chip img { max-height: 40px; }
+}
+@media (max-height: 800px) {
+  .logo-strip--hero { margin-top: 1.25rem; }
+  .logo-strip--hero .logo-strip__head { margin-bottom: 0.6rem; }
+  .logo-strip--hero .logo-chip { height: 72px; }
+  .logo-strip--hero .logo-chip img { max-height: 40px; }
+}
+@media (max-height: 700px) {
+  .logo-strip--hero { margin-top: 1rem; }
+  .logo-strip--hero .logo-chip { height: 64px; min-width: 148px; }
+  .logo-strip--hero .logo-chip img { max-height: 34px; }
 }
 
 @media (max-width: 600px) {
