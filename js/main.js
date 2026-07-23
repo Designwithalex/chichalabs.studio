@@ -49,6 +49,7 @@
       if (!toggle || !menu) return;
 
       let closeTimer = null;
+      let pointerInside = false;
 
       function open() {
         clearTimeout(closeTimer);
@@ -69,18 +70,28 @@
         closeTimer = setTimeout(close, 140);
       }
 
+      /* Con el puntero encima el menú ya está abierto por hover, así que un
+         click ahí sólo lo cerraría bajo el mouse: se ignora y el panel queda
+         abierto. Sin puntero (teclado) el click sigue siendo un toggle. */
       toggle.addEventListener('click', () => {
-        root.classList.contains('is-open') ? close() : open();
+        if (!root.classList.contains('is-open')) open();
+        else if (!pointerInside) close();
       });
 
-      root.addEventListener('mouseenter', open);
-      root.addEventListener('mouseleave', closeSoon);
+      root.addEventListener('mouseenter', () => { pointerInside = true; open(); });
+      root.addEventListener('mouseleave', () => { pointerInside = false; closeSoon(); });
 
       /* No se abre con el solo hecho de recibir foco: al tabular por el nav
          obligaría a atravesar los 6 links del menú para llegar a "Trabajos".
-         Se abre con Enter/Espacio (click) y se cierra al salir con Tab. */
-      root.addEventListener('focusout', () => {
-        if (!root.contains(document.activeElement)) close();
+         Se abre con Enter/Espacio (click) y se cierra al salir con Tab.
+
+         Va por relatedTarget y no por document.activeElement: durante el
+         focusout el foco está en tránsito y activeElement es <body>, así que
+         mirarlo cerraba el menú en el mousedown sobre un item — quedaba en
+         pointer-events:none antes del mouseup y el link nunca recibía el
+         click (había que clickear dos veces para navegar). */
+      root.addEventListener('focusout', (e) => {
+        if (!root.contains(e.relatedTarget)) close();
       });
 
       document.addEventListener('keydown', (e) => {
