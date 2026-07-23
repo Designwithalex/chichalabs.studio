@@ -268,7 +268,7 @@
         <h2 class="cs-cta__title">¿Tenés un proyecto similar?</h2>
         <p class="cs-cta__sub">Contanos qué necesitás. Arrancamos con un diagnóstico para entender el problema antes de proponer cualquier solución.</p>
         <div class="cs-cta__actions">
-          <a href="https://wa.me/5491178221468?text=Hola%2C%20vi%20los%20casos%20de%20estudio%20y%20me%20interesa%20hablar%20de%20mi%20proyecto."
+          <a data-location="cta_final" href="https://wa.me/5491178221468?text=Hola%2C%20vi%20los%20casos%20de%20estudio%20y%20me%20interesa%20hablar%20de%20mi%20proyecto."
              class="btn btn--ghost" target="_blank" rel="noopener noreferrer">
             Escribir por WhatsApp
           </a>
