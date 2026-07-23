@@ -51,7 +51,7 @@ body::before {
 }
 
 /* Everything real sits above the ambient layers */
-.nav, .nav-mobile, main, section, footer, .intro-strip, .marquee-section,
+.nav, .nav-mobile, main, section, footer, .intro-strip, .logo-strip,
 .wa-float, .portfolio-item, .scroll-progress { position: relative; z-index: 2; }
 
 img, svg { display: block; max-width: 100%; }
@@ -850,22 +850,99 @@ body.nav-open { overflow: hidden; }
 /* ============================================================
    MARQUEE — Marcas
    ============================================================ */
-.marquee-section { padding: 4rem 0; border-top: 1px solid var(--line-2); }
-.marquee-section__head { margin-bottom: 2rem; }
-.marquee-section__label {
+
+/* ============================================================
+   LOGO STRIP — carrusel de logos de clientes
+
+   Los logos van sobre un chip CLARO a propósito, no sobre el fondo
+   oscuro: 8 de las 12 marcas son azules/marrones/negros y sobre
+   #0A0A0B no llegan al 4.5:1 (Cabrales 1.9:1, PACTO 2.3:1, Café la
+   Humedad 3.9:1). Sobre el chip claro cada marca se ve con su color
+   real, que es lo que hace que el usuario la reconozca. Los 4 logos
+   que venían en blanco tienen su variante -ink.png para este fondo.
+
+   Alturas: cada chip lleva un --logo-h calculado como k/√(aspecto),
+   así un logotipo muy ancho y una marca cuadrada tienen la misma
+   masa óptica en vez del mismo alto.
+============================================================ */
+.logo-strip { padding: 4rem 0; border-top: 1px solid var(--line-2); }
+.logo-strip__head { margin-bottom: 1.75rem; }
+.logo-strip__label {
   font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
   text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--ink-3);
 }
-.marquee { overflow: hidden; position: relative; padding: 1.5rem 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.marquee__track { display: flex; gap: 4rem; width: max-content; animation: marquee 32s linear infinite; }
-.marquee__track span {
-  font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
-  letter-spacing: -0.01em; white-space: nowrap; color: var(--ink-3);
-  transition: color var(--t-fast);
+
+/* Variante para el hero: sin borde ni título, pegada al hero de arriba. */
+.logo-strip--hero { padding: 0 0 1rem; border-top: 0; }
+
+.logo-strip__viewport {
+  overflow: hidden; position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
-.marquee:hover .marquee__track span { color: var(--ink-3); }
-.marquee__track span:hover { color: var(--ink); }
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.logo-strip__track {
+  display: flex; align-items: center; gap: 1rem;
+  width: max-content; margin: 0; padding: 0.5rem 0; list-style: none;
+  /* El corrimiento es -50% MENOS medio gap: el track tiene 2 copias y N gaps
+     por copia, así que -50% pelado deja un salto de medio gap en cada vuelta. */
+  animation: logo-strip-scroll 54s linear infinite;
+}
+.logo-strip__viewport:hover .logo-strip__track { animation-play-state: paused; }
+
+/* Glass del sistema (blur, borde, highlight, radius) pero en clave CLARA.
+   El --glass-bg de los tokens es rgba(255,255,255,0.04): sobre #0A0A0B da un
+   chip #141415, y ahí Cabrales vuelve a 1.9:1. Con el fill claro el chip sigue
+   siendo translúcido — deja pasar el glow verde del fondo y el blur — y las
+   marcas oscuras se leen. */
+.logo-chip {
+  --logo-h: 34px;
+  --chip-bg: rgba(255, 255, 255, 0.85);
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  min-width: 196px; height: 92px; padding: 0 1.75rem;
+  background: var(--chip-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), var(--shadow-sm);
+  transition: transform var(--t-fast) var(--ease-out-quint),
+              box-shadow var(--t-fast), background var(--t-fast);
+}
+.logo-chip img {
+  display: block; width: auto; height: var(--logo-h);
+  max-width: 156px; object-fit: contain;
+}
+.logo-chip:hover {
+  --chip-bg: rgba(255, 255, 255, 0.97);
+  transform: translateY(-3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55),
+              0 10px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--green-line);
+}
+
+@keyframes logo-strip-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-50% - 0.5rem)); }
+}
+
+@media (max-width: 600px) {
+  /* Sin backdrop-filter en mobile: son 24 chips dentro de un track que anima
+     sin parar, y el fondo que hay detrás es casi plano, así que el blur cuesta
+     GPU y no se ve. La translucidez del chip queda igual. */
+  .logo-chip { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .logo-chip { min-width: 156px; height: 78px; padding: 0 1.25rem; }
+  /* El chip baja a 78px: sin este tope los --logo-h de 56px (las marcas
+     cuadradas) lo llenarían de borde a borde. max-height gana sobre height. */
+  .logo-chip img { max-width: 120px; max-height: 42px; }
+}
+
+/* Sin animación: se puede recorrer con scroll y se esconde la copia
+   duplicada, que sólo existe para que el loop no tenga costura. */
+@media (prefers-reduced-motion: reduce) {
+  .logo-strip__track { animation: none; }
+  .logo-strip__viewport { overflow-x: auto; }
+  .logo-strip__track > [aria-hidden="true"] { display: none; }
+}
 
 /* ============================================================
    CTA FINAL
@@ -1027,7 +1104,6 @@ body.nav-open { overflow: hidden; }
   html { scroll-behavior: auto; }
   .js-reveal { opacity: 1 !important; transform: none !important; }
   .mark::after { animation: none; transform: scaleX(1); }
-  .marquee__track { animation: none; }
   .wa-float { animation: none; }
   .icon--diagnostico .icon__pulse { animation: none; opacity: 0; }
   .icon--webs .icon__draw { stroke-dashoffset: 0 !important; transition: none; }

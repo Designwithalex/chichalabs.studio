@@ -20,7 +20,6 @@
     }
     initIconAnimations();
     initFlowDot();
-    initMarquee();
     initCountUp();
     initSpotlight();
     initScrollProgress();
@@ -259,7 +258,7 @@
       '.cta-final__sub',
       '.cta-final__actions',
       '.intro-strip__inner p',
-      '.marquee-section__label',
+      '.logo-strip__label',
     ].join(', ');
 
     document.querySelectorAll(selectors).forEach(el => {
@@ -465,15 +464,6 @@
   /* ============================================================
      MARQUEE — pausa en hover
   ============================================================ */
-  function initMarquee() {
-    if (prefersReducedMotion) return;
-    const track = document.querySelector('.marquee__track');
-    if (!track) return;
-    const marquee = track.parentElement;
-    marquee.addEventListener('mouseenter', () => { track.style.animationPlayState = 'paused'; });
-    marquee.addEventListener('mouseleave', () => { track.style.animationPlayState = 'running'; });
-  }
-
   /* ============================================================
      COUNT-UP — números/KPIs animan al entrar en viewport
   ============================================================ */
