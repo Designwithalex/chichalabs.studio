@@ -1,15 +1,27 @@
 # Logos de clientes
 
-Los usa el componente `.logo-strip` (ver `css/styles.css`). Van sobre un **chip
-glass en clave clara** — `rgba(255,255,255,0.85)` + el `--glass-blur` del sistema,
-que sobre el fondo del sitio da `#DADADA` — no sobre el fondo oscuro.
+Los usa el componente `.logo-strip` (ver `css/styles.css`), que tiene **dos
+estados**: en reposo, chip glass oscuro (`--glass-bg`) con el logo en blanco
+translúcido; en **hover**, el chip pasa a blanco sólido y el logo recupera su
+color real.
 
-## Por qué chip claro
+Los archivos son siempre la versión **sobre claro** (los `-ink.png` para los 4
+que venían en blanco). Sirven tal cual para el hover, y el filtro
+`invert(1) grayscale(1) brightness(2)` los pasa a blanco para el reposo.
 
-El `--glass-bg` de los tokens es `rgba(255,255,255,0.04)`: sobre `#0A0A0B` da un
-chip `#141415`, o sea casi negro, y ahí Cabrales vuelve a **1.7:1**. Por eso el
-chip usa el vocabulario glass del sistema (blur, borde, highlight, radius) pero
-con el fill claro.
+## Por qué el filtro es invert y no una silueta
+
+Lo obvio para pasar un logo a blanco es `brightness(0) invert(1)`, pero eso
+aplana a **silueta** y borra la figura/fondo interna. Probado sobre los 12:
+Café la Humedad (badge oscuro con el texto claro adentro) quedaba
+irreconocible, y el hexágono de Chemikal y el apretón de manos de Mercado Libre
+quedaban como manchas blancas. `invert(1) grayscale(1)` conserva esa estructura
+y los 12 se leen.
+
+El `brightness(2)` es por FieldView y Ernesto: invertidos caen en un gris medio
+y sin eso quedan en **2.7:1** contra el chip. Con 2 el peor caso llega a 4.3:1.
+
+## Por qué el hover es a chip claro
 
 8 de las 12 marcas son azules, marrones o negras y sobre `#0A0A0B` no llegan al
 mínimo de 4.5:1 — medido: Cabrales **1.9:1**, PACTO **2.3:1**, Café la Humedad
@@ -45,7 +57,9 @@ plana — sin eso el antialias se engorda y el logo queda tosco.
 ## Si agregás un logo
 
 1. PNG con transparencia a `assets/logos/<marca>.png`.
-2. Miralo sobre `#DADADA` (el chip resultante). Si es claro u oscuro-sin-contraste, generá el `-ink`.
+2. Miralo en los **dos** estados: sobre blanco (hover) y pasado por
+   `invert(1) grayscale(1) brightness(2)` sobre el chip oscuro (reposo). Si en
+   blanco no contrasta, generá el `-ink`.
 3. En el markup, el `--logo-h` del chip se calcula como `63 / √(ancho/alto)`
    redondeado, con tope entre 22 y 56 px. Es lo que hace que un logotipo muy
    ancho y una marca cuadrada tengan la misma masa óptica en vez del mismo alto.
