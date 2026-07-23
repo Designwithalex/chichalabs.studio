@@ -3,7 +3,9 @@
 Qué mide cada evento, dónde dispara y para qué sirve. Si dentro de seis meses
 alguien se pregunta "¿y esto qué era?", la respuesta está acá.
 
-- **Pixel ID:** `1013150531476636`
+- **Pixel ID:** `1703278184288117`
+  (reemplazó a `1013150531476636` el 2026-07-23; los datos del pixel viejo
+  quedaron en su propia cuenta y no se migran)
 - **Snippet base:** inline en el `<head>` de las 7 páginas públicas (dispara `PageView`).
 - **Eventos:** `js/pixel-events.js`, cargado en las 7 páginas.
 - **Server-side (Conversions API):** no está implementado. Todo es client-side.
