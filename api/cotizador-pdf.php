@@ -20,8 +20,16 @@ declare(strict_types=1);
  *   "mensaje":"texto libre",
  *   "modulos":[{"modulo":"","descripcion":"","categoria":"","cantidad":1,"horas":10,"subtotal":450000}],
  *   "horas":35, "valor_hora":45000, "total":1575000,
- *   "calendar":"https://calendar.app.google/..."
+ *   "calendar":"https://calendar.app.google/...",
+ *   "token":"a1b2c3d4e5f6"   // opcional, ver abajo
  * }
+ *
+ * Si viene "token", ademas de devolver el PDF lo guarda en
+ * /propuestas/<numero>-<token>.pdf para que el email pueda ofrecer un boton
+ * de "Descargar la propuesta". El token lo genera n8n y es lo unico que
+ * hace la URL no adivinable, asi que nunca se loguea ni se muestra.
+ * Guardar es best-effort: si falla, igual devolvemos el PDF (el adjunto del
+ * mail es la via principal) y queda el error en el log de PHP.
  */
 
 // Nada de warnings en la salida: corromperían el binario del PDF.
@@ -79,7 +87,44 @@ try {
 
 // Nombre de archivo legible para el adjunto del email.
 $slug = preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($d['numero'] ?? 'propuesta'));
-$name = 'Propuesta-ChichaLabs-' . ($slug !== '' ? $slug : 'propuesta') . '.pdf';
+$slug = $slug !== '' ? $slug : 'propuesta';
+$name = 'Propuesta-ChichaLabs-' . $slug . '.pdf';
+
+// Copia descargable, si n8n mando un token.
+$token = preg_replace('/[^a-f0-9]/', '', strtolower((string) ($d['token'] ?? '')));
+if (strlen($token) >= 12) {
+    guardar_copia($slug, substr($token, 0, 32), $pdf);
+}
+
+/**
+ * Deja el PDF en /propuestas/ para que el email pueda linkearlo.
+ * $slug y $token ya vienen saneados a [A-Za-z0-9_-] y [a-f0-9], asi que no
+ * hay forma de salir del directorio.
+ */
+function guardar_copia(string $slug, string $token, string $pdf): void
+{
+    $dir = dirname(__DIR__) . '/propuestas';
+    if (!is_dir($dir) || !is_writable($dir)) {
+        error_log('cotizador-pdf: /propuestas no existe o no es escribible');
+        return;
+    }
+    if (file_put_contents($dir . '/' . $slug . '-' . $token . '.pdf', $pdf) === false) {
+        error_log('cotizador-pdf: no se pudo guardar la copia de ' . $slug);
+        return;
+    }
+    limpiar_viejas($dir);
+}
+
+/** Borra propuestas de mas de 180 dias para que la carpeta no crezca sola. */
+function limpiar_viejas(string $dir): void
+{
+    $limite = time() - 180 * 86400;
+    foreach (glob($dir . '/*.pdf') ?: [] as $f) {
+        if (filemtime($f) < $limite) {
+            @unlink($f);
+        }
+    }
+}
 
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="' . $name . '"');

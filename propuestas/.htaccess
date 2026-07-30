@@ -1,0 +1,25 @@
+# Copias descargables de las propuestas del cotizador.
+# Las escribe api/cotizador-pdf.php con un nombre que incluye un token
+# aleatorio: la URL no es adivinable y es lo unico que las protege.
+
+# Sin listado de directorio: nadie puede enumerar las propuestas.
+Options -Indexes
+
+# Nada de ejecutar codigo aca adentro, pase lo que pase.
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8
+
+# Solo se sirven PDFs.
+<FilesMatch "\.(?!pdf$)[^.]+$">
+  Require all denied
+</FilesMatch>
+
+# Que el navegador lo abra/descargue como PDF y no lo cachee para siempre.
+<FilesMatch "\.pdf$">
+  Header set Content-Type "application/pdf"
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Cache-Control "private, max-age=86400"
+</FilesMatch>

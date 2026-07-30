@@ -7,3 +7,6 @@ config/config.php
 tools/preview.html
 tools/preview.pdf
 tools/.n8n-ids.json
+
+# Propuestas generadas por el cotizador (viven en el servidor)
+propuestas/*.pdf

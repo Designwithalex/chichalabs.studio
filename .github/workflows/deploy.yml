@@ -46,3 +46,4 @@ jobs:
             sql/**
             n8n/**
             tools/**
+            propuestas/*.pdf
