@@ -51,6 +51,34 @@ El formulario de la sección CTA apunta a `https://formspree.io/f/XXXXXXXX`. Opc
 
 ---
 
+## ⚠️ Al cambiar un CSS o un JS: subir la versión
+
+Hostinger sirve los assets estáticos con `Cache-Control: max-age=604800`
+(**7 días**). Sin nada más, cualquiera que haya entrado al sitio en la última
+semana sigue viendo el CSS y el JS viejos, aunque el HTML sea nuevo. Eso ya
+nos mordió una vez: se publicaron botones que dependían de un JS nuevo y a
+los visitantes recurrentes no les hacían nada.
+
+Por eso todas las referencias locales llevan un sello de versión:
+
+```html
+<link rel="stylesheet" href="css/styles.css?v=20260730">
+<script defer src="js/cotizador.js?v=20260730"></script>
+```
+
+**Cada vez que edites un archivo de `css/` o `js/`, subí el número en todas
+las páginas** (es una fecha `AAAAMMDD`, alcanza con buscar y reemplazar el
+valor viejo por el de hoy):
+
+```bash
+grep -rl "v=20260730" --include="*.html" . | xargs sed -i "s/v=20260730/v=$(date +%Y%m%d)/g"
+```
+
+Sin eso el cambio queda publicado pero medio invisible, y es muy difícil de
+diagnosticar porque a vos —que hiciste hard-reload— se te ve bien.
+
+---
+
 ## Deploy
 
 ### Netlify (recomendado)
