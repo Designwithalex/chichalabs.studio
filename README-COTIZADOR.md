@@ -126,6 +126,11 @@ La pregunta es el texto que ve el cliente — escribila como pregunta directa
 también sale en el PDF. Si querés que un módulo exista para cotizar a mano
 pero **no** aparezca en la web, poné la pregunta entre paréntesis.
 
+> ⚠️ **`Pregunta del formulario` y `Descripción` son texto de cara al
+> cliente.** Salen tal cual en la web y en el PDF de la propuesta. Las notas
+> internas ("ojo que este campo está así por tal motivo") van en el **cuerpo
+> de la página del módulo**, que el cotizador no lee: solo lee propiedades.
+
 Aparece en la web en el próximo pedido: no hay cache, cada request lee Notion.
 
 ### Sacar o cambiar el precio de un módulo
