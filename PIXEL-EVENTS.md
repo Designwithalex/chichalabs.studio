@@ -23,7 +23,7 @@ dinámicamente y no depende de qué otro JS cargue cada página.
 |---|---|---|---|
 | `PageView` | standard | Todas las páginas, en el load | Base de todo. Lo dispara el snippet, no `pixel-events.js`. |
 | `ViewContent` | standard | Load de `servicios/*.html` | **Público base de retargeting.** "Vio la landing de un servicio". |
-| `Lead` | standard | Click en cualquier link `wa.me`, en todas las páginas | **La conversión.** Es el evento de optimización de la campaña. |
+| `Lead` | standard | Click en cualquier link `wa.me` **y** envío del formulario del cotizador | **La conversión.** Es el evento de optimización de la campaña. |
 | `Schedule` | standard | Click en cualquier link `calendar.app.google` | El otro camino de cierre: reunión agendada en vez de WhatsApp. |
 | `LandingEngaged` | custom | Sección del caso visible en una landing, una sola vez | **Diagnóstico**, no público. Ver abajo. |
 
@@ -89,6 +89,32 @@ landing). Un solo evento, no cinco thresholds de scroll.
 **Apunta a `.section--tinted`, no a un `aria-label` fijo.** Es la 2da sección de
 la landing: en Automatizaciones y Aplicaciones es el caso real, en Dashboards e
 IA es "El problema". Mismo slot del funnel en las 4.
+
+### 2026-07-30 — de dónde viene el `Lead` en las landings de servicio
+
+Las 4 landings de servicio **ya no tienen CTA de WhatsApp**: el botón
+principal pasó a ser "Quiero saber el precio", que abre el cotizador. Sólo
+quedó el globo flotante de WhatsApp.
+
+El evento `Lead` **no se perdió**: el envío del formulario del cotizador
+dispara el mismo `Lead`, con `location: 'cotizador_modal'` y además `value`
+(el precio calculado) y `currency: 'ARS'`. Al ser el mismo nombre de evento,
+la campaña sigue optimizando contra la misma señal y el público de exclusión
+sigue funcionando igual.
+
+Qué cambia en la práctica:
+
+- El `Lead` ahora exige más del visitante (marcar opciones + dejar el email),
+  así que **el volumen va a bajar y la calidad debería subir**: llega con el
+  alcance elegido y el email confirmado, no una charla que arranca de cero.
+- El corte por `location` distingue los canales: `hero_cotizador`,
+  `inversion_cotizador`, `cta_final`, `nav_mobile`, `flotante` (WhatsApp).
+- `value` permite optimizar por valor, no sólo por cantidad de leads. Con el
+  volumen actual todavía no alcanza, pero el dato ya se está juntando.
+
+**Ojo si el CPL se dispara:** antes de tocar los ads, mirá si el problema es
+que la gente abre el cotizador y lo abandona. El evento custom `QuoteStarted`
+(al elegir servicio) contra `Lead` te da esa tasa de abandono.
 
 **No usamos `Contact`.** Es redundante con `Lead` para la misma acción y
 partiría el signal.
