@@ -91,7 +91,7 @@ Dos ramas independientes, una por endpoint.
 | `Armar propuesta` | Valida el contacto, recalcula el precio, arma número y fecha |
 | `Generar PDF` | POST a `/api/cotizador-pdf.php`, recibe el PDF como binario |
 | `Preparar envío` | **Punto único de salida.** Deja listos los datos + el PDF |
-| `Email al cliente` | Manda el PDF adjunto y el link de Calendar |
+| `Email al cliente` | Manda el PDF adjunto, el link de Calendar y el de descarga |
 | `Aviso interno` | Copia a notificaciones@chichalabs.studio |
 | `FASE 2 · acá va WhatsApp` | Placeholder. Ver sección 8 |
 | `Confirmar al formulario` | Responde `{ok:true, numero}` a la web |
@@ -261,6 +261,29 @@ servicio y `QuoteUnavailable` si n8n no responde.
 **Si n8n se cae, la sección no queda rota.** Se esconde la calculadora y
 aparece un bloque con WhatsApp y Calendar. Lo mismo sin JavaScript.
 
+**El PDF va adjunto Y queda descargable.** El adjunto es la vía principal,
+pero en el celular muchos clientes de correo lo esconden, así que el email
+suma un botón secundario. `Armar propuesta` genera un token aleatorio de 96
+bits y el endpoint guarda una copia en `/propuestas/<numero>-<token>.pdf`.
+
+Sobre esa carpeta:
+
+- **Lo único que protege una propuesta es que la URL no es adivinable.** No
+  hay login. Si el token se filtra, esa propuesta queda accesible — no
+  pongas nada ahí que no puedas mandar por mail.
+- `.htaccess` corta el listado de directorio, la ejecución de PHP y todo lo
+  que no sea `.pdf`. Además está en `robots.txt` y va con `X-Robots-Tag`.
+- Los PDF están **excluidos del sync por FTP**: si no, cada deploy borraría
+  las propuestas ya emitidas. La carpeta y su `.htaccess` sí se despliegan.
+- Se borran solas a los 180 días (`limpiar_viejas()`), para que no crezca
+  sin techo.
+- La carpeta tiene que ser **escribible** en el servidor. Si no lo es, el
+  PDF igual se genera y se manda adjunto, pero el botón de descarga da 404.
+
+**Los emails no llevan la firma de n8n.** Los dos nodos van con
+`appendAttribution: false`; si no, el pie dice "This email was sent
+automatically with n8n".
+
 ---
 
 ## 8. Fase 2 — sumar WhatsApp
@@ -279,7 +302,11 @@ Cuando Meta apruebe la verificación del negocio:
    | `nombre`, `servicio`, `numero` | Para el template del mensaje |
    | `total_formateado` | Ej. `$ 1.170.000` |
    | `calendar` | Link de reservas |
-   | `binary.data` | El PDF ya generado |
+   | `pdf_url` | URL pública del PDF — **la vía más simple para WhatsApp** |
+   | `binary.data` | El PDF ya generado, por si preferís subirlo como media |
+
+Para el documento, WhatsApp Cloud API acepta una URL directa, así que
+`pdf_url` te evita todo el paso de subir el archivo a la API de media.
 
 El template aprobado de WhatsApp tiene que tener **header de tipo documento**
 para poder mandar el PDF. Si el cliente no dejó teléfono, hay que poner un IF
