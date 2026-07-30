@@ -6,17 +6,6 @@
    Se carga después de styles.css (reutiliza .btn, .mark, .container).
    ============================================================================ */
 
-/* Sólo para lectores de pantalla (el label real de cada toggle). */
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* ── Layout general ─────────────────────────────────────── */
 .quoter__intro { max-width: 60ch; margin-bottom: 3.5rem; }
 .quoter__title {
