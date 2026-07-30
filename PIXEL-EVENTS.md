@@ -41,8 +41,14 @@ Events Manager.
 
 // Lead / Schedule
 { content_name: …, content_category: 'servicio' | 'sitio', content_ids: [slug],
-  location: 'hero' | 'inversion' | 'cta_final' | 'footer' | 'flotante' | 'nav' | 'nav_mobile' | 'diagnostico' | 'contenido',
+  location: 'hero' | 'inversion' | 'cta_final' | 'footer' | 'flotante' | 'nav' | 'nav_mobile' | 'contenido',
   source_page: '/servicios/automatizaciones.html' }
+
+// Lead del cotizador (lo dispara js/cotizador.js, no pixel-events.js)
+{ content_name: 'Automatizaciones', content_category: 'cotizador',
+  content_ids: ['automatizaciones'],
+  location: 'hero_cotizador' | 'inversion_cotizador' | 'cta_final' | 'nav_mobile' | 'cotizador',
+  value: 1170000, currency: 'ARS' }
 
 // LandingEngaged
 { content_name: …, content_category: 'servicio', content_ids: [slug], section: 'caso' }
@@ -107,8 +113,10 @@ Qué cambia en la práctica:
 - El `Lead` ahora exige más del visitante (marcar opciones + dejar el email),
   así que **el volumen va a bajar y la calidad debería subir**: llega con el
   alcance elegido y el email confirmado, no una charla que arranca de cero.
-- El corte por `location` distingue los canales: `hero_cotizador`,
-  `inversion_cotizador`, `cta_final`, `nav_mobile`, `flotante` (WhatsApp).
+- El corte por `location` te dice **desde qué botón** convirtió: el modal le
+  pasa al evento el `data-location` del botón que lo abrió, así que vas a ver
+  `hero_cotizador`, `inversion_cotizador`, `cta_final` o `nav_mobile`. Desde
+  la home (widget inline, sin botón de por medio) es `cotizador`.
 - `value` permite optimizar por valor, no sólo por cantidad de leads. Con el
   volumen actual todavía no alcanza, pero el dato ya se está juntando.
 

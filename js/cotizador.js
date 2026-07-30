@@ -162,7 +162,11 @@
      puede haber una instancia inline y otra en modal a la vez.
   ══════════════════════════════════════════════════════════════════ */
   function crearCotizador(root, opciones) {
-    const fijo = (opciones || {}).servicio || null;
+    const opts = opciones || {};
+    const fijo = opts.servicio || null;
+    /* De qué botón salió, para poder cortar el Lead por ubicación y saber
+       cuál convierte (hero, CTA final, etc.). */
+    const origen = opts.origen || (fijo ? 'cotizador_modal' : 'cotizador');
     root.innerHTML = plantilla(fijo);
 
     const q = (sel) => root.querySelector(sel);
@@ -461,7 +465,7 @@
           content_name: state.servicioNombre,
           content_category: 'cotizador',
           content_ids: [state.servicio],
-          location: fijo ? 'cotizador_modal' : 'cotizador',
+          location: origen,
           value: state.precio ? Number(state.precio.total) : undefined,
           currency: 'ARS'
         });
@@ -544,7 +548,10 @@
     document.body.appendChild(overlay);
     document.body.classList.add('qmodal-open');
 
-    crearCotizador(overlay.querySelector('.quoter'), { servicio: servicioId });
+    crearCotizador(overlay.querySelector('.quoter'), {
+      servicio: servicioId,
+      origen: (disparador && disparador.dataset.location) || 'cotizador_modal'
+    });
 
     const dialog = overlay.querySelector('.qmodal__dialog');
     const cerrar = () => cerrarModal();
