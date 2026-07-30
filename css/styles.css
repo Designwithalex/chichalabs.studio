@@ -169,6 +169,22 @@ p { font-family: var(--font-body); }
 
 .btn--lg { font-size: 1.02rem; padding: 1.05rem 2.2rem; }
 
+/* Botón secundario con marco — para cuando hay dos CTA juntos y uno de
+   los dos no puede robarle el protagonismo al principal. */
+.btn--outline {
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  border: 1px solid var(--line-strong);
+}
+.btn--outline:hover {
+  border-color: var(--green-line);
+  color: var(--green);
+  background: var(--green-wash);
+  transform: translateY(-1px);
+}
+.btn--outline:active { transform: translateY(0); }
+
 /* Text/secondary button — quiet, animated underline */
 .btn--text {
   padding: 0.85rem 0.25rem;

@@ -15,7 +15,36 @@ propuesta en PDF por email con el link de Calendar.
 | Base de módulos | Notion — [Módulos del Cotizador](https://app.notion.com/p/1d233d3aae7c4398877adf5c00916f1a) | Las horas de cada módulo. **Única fuente de verdad de los precios.** |
 | API liviana | n8n — `Cotizador — API liviana` | Sirve el formulario y calcula el precio en vivo |
 | Propuesta | n8n — `Cotizador — Propuesta (PDF + email)` | Calcula, genera el PDF y manda el email |
-| Web | este repo | La sección `#cotizador` de la home |
+| Web | este repo | La sección `#cotizador` de la home y el modal de las landings |
+
+### Dos formas de mostrarlo, un solo template
+
+`js/cotizador.js` genera todo el markup del widget. En el HTML no hay ni una
+línea del formulario, a propósito: si estuviera, habría que mantener cinco
+copias iguales (home + 4 landings).
+
+- **Inline** — un `<div class="quoter" data-inline></div>` vacío. Está sólo
+  en la home, con el selector de los 4 servicios arriba.
+- **Modal** — cualquier `<button data-cotizador="ID-DE-SERVICIO">`. Abre el
+  cotizador ya filtrado por ese servicio, **sin sacar al visitante de la
+  landing donde está**. No muestra el selector: entra directo a las
+  preguntas.
+
+Para sumar un botón en cualquier página:
+
+```html
+<button type="button" class="btn btn--outline btn--lg"
+        data-cotizador="automatizaciones" data-location="hero_cotizador">
+  Quiero saber el precio
+</button>
+```
+
+Y que la página cargue `css/cotizador.css` y `js/cotizador.js`. Nada más:
+el listener es delegado en `document`, así que funciona con botones que
+aparezcan después.
+
+Todos los CTA del cotizador dicen **"Quiero saber el precio"**. Si agregás
+uno nuevo, mantené el texto: es el mismo botón en toda la web.
 
 ### Por qué el cálculo NO está en JavaScript
 
@@ -126,10 +155,22 @@ La pregunta es el texto que ve el cliente — escribila como pregunta directa
 también sale en el PDF. Si querés que un módulo exista para cotizar a mano
 pero **no** aparezca en la web, poné la pregunta entre paréntesis.
 
-> ⚠️ **`Pregunta del formulario` y `Descripción` son texto de cara al
-> cliente.** Salen tal cual en la web y en el PDF de la propuesta. Las notas
-> internas ("ojo que este campo está así por tal motivo") van en el **cuerpo
-> de la página del módulo**, que el cotizador no lee: solo lee propiedades.
+> ⚠️ **`Módulo`, `Pregunta del formulario` y `Descripción` son texto de cara
+> al cliente.** Salen tal cual en la web y en el PDF de la propuesta. Las
+> notas internas ("ojo que este campo está así por tal motivo") van en el
+> **cuerpo de la página del módulo**, que el cotizador no lee: solo lee
+> propiedades.
+
+Dos reglas de redacción, aprendidas a los golpes:
+
+1. **Nada de jerga.** El que lee es un dueño de negocio, no un developer.
+   Nunca: n8n, RAG, CRM, ERP, API, KPI, CMS, flujo, disparador, fuente de
+   datos, microinteracciones, human-in-the-loop. Escribí lo que la persona
+   va a *notar*, no cómo está hecho por dentro.
+2. **La pregunta tiene que coincidir con el control.** Si `Se aplica` no es
+   `Una vez`, el formulario dibuja un selector de cantidad: la pregunta
+   tiene que arrancar con "¿Cuántos…?". Si es `Una vez`, es un interruptor
+   sí/no y la pregunta no puede pedir un número.
 
 Aparece en la web en el próximo pedido: no hay cache, cada request lee Notion.
 

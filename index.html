@@ -101,7 +101,7 @@
     </div>
     <div class="nav-mobile__ctas">
       <a data-location="nav_mobile" href="https://calendar.app.google/YrXbTqH8iREgLShf6" class="btn btn--ghost" target="_blank" rel="noopener noreferrer">Agendá una reunión</a>
-      <a href="#cotizador" class="btn btn--text">Quiero mi cotización →</a>
+      <a href="#cotizador" class="btn btn--text">Quiero saber el precio →</a>
       <a data-location="nav_mobile" href="https://wa.me/5491178221468?text=Hola%2C%20quiero%20cotizar%20un%20proyecto%20de%20software%20para%20mi%20negocio.%20%C2%BFMe%20ayud%C3%A1s%20a%20ver%20qu%C3%A9%20conviene%20construir%3F"
          class="btn btn--text" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp →</a>
     </div>
@@ -125,7 +125,7 @@
       </p>
       <div class="hero__ctas">
         <a data-location="hero" href="https://calendar.app.google/YrXbTqH8iREgLShf6" class="btn btn--ghost" target="_blank" rel="noopener noreferrer">Agendá una reunión</a>
-        <a href="#cotizador" class="btn btn--text">Quiero mi cotización →</a>
+        <a href="#cotizador" class="btn btn--text">Quiero saber el precio →</a>
       </div>
     </div>
     <section class="logo-strip logo-strip--hero" aria-label="Marcas con las que trabajamos">
@@ -694,9 +694,11 @@
 
   <!-- =====================================================
        [ 05 ] COTIZADOR EN VIVO
-       El cálculo NO vive acá: la web sólo pide módulos y precios al
-       webhook de n8n (ver js/cotizador.js). Las horas de cada módulo
-       nunca se exponen en el front — se editan en Notion.
+       El markup del widget lo genera js/cotizador.js: el mismo template
+       sirve acá inline y dentro del modal de las landings de servicio,
+       así no hay cinco copias del formulario dando vueltas.
+       El cálculo NO vive en el front: la web pide los módulos sin horas
+       y el precio lo resuelve n8n. Ver README-COTIZADOR.md.
   ====================================================== -->
   <section class="section section--accent" id="cotizador">
     <div class="container">
@@ -704,171 +706,23 @@
         <span class="section-label__text">Cotizador</span>
       </div>
 
-      <div class="quoter" id="quoter"
-           data-api="https://yellow-muskrat.pikapod.net/webhook/cotizador"
-           data-calendar="https://calendar.app.google/YrXbTqH8iREgLShf6">
-
-        <div class="quoter__intro">
-          <h2 class="quoter__title">Cotizá tu proyecto <span class="mark">acá mismo</span></h2>
-          <p>Elegí el servicio, marcá lo que necesitás y mirá el precio actualizarse en vivo. Cuando te cierre, te mandamos la propuesta completa en PDF por email, con el desglose módulo por módulo.</p>
-        </div>
-
-        <!-- ── PASO 01 · servicio ───────────────────────────── -->
-        <div class="quoter__step">
-          <p class="quoter__step-label"><span class="quoter__step-num">01</span> ¿Qué necesitás construir?</p>
-          <div class="quoter__services" role="radiogroup" aria-label="Elegí un servicio">
-
-            <button type="button" class="qservice" role="radio" aria-checked="false" data-servicio="web-comercial">
-              <svg class="qservice__icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <rect x="6" y="10" width="52" height="40" rx="3" stroke="currentColor" stroke-width="2"/>
-                <line x1="6" y1="20" x2="58" y2="20" stroke="currentColor" stroke-width="2"/>
-                <circle cx="14" cy="15" r="2" fill="currentColor"/><circle cx="22" cy="15" r="2" fill="currentColor"/>
-                <line x1="14" y1="31" x2="50" y2="31" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <line x1="14" y1="39" x2="34" y2="39" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span class="qservice__name">Web comercial</span>
-              <span class="qservice__desc">Landing o sitio pensado para vender</span>
-            </button>
-
-            <button type="button" class="qservice" role="radio" aria-checked="false" data-servicio="automatizaciones">
-              <svg class="qservice__icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <circle cx="12" cy="32" r="6" stroke="currentColor" stroke-width="2"/>
-                <circle cx="52" cy="32" r="6" stroke="currentColor" stroke-width="2"/>
-                <path d="M18 32 C 28 14, 36 14, 46 32" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-              </svg>
-              <span class="qservice__name">Automatizaciones</span>
-              <span class="qservice__desc">Que la info llegue sola al lugar correcto</span>
-            </button>
-
-            <button type="button" class="qservice" role="radio" aria-checked="false" data-servicio="dashboards">
-              <svg class="qservice__icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <rect x="6" y="6" width="52" height="52" rx="3" stroke="currentColor" stroke-width="2"/>
-                <rect x="16" y="34" width="8" height="18" stroke="currentColor" stroke-width="2"/>
-                <rect x="28" y="24" width="8" height="28" stroke="currentColor" stroke-width="2"/>
-                <rect x="40" y="16" width="8" height="36" stroke="currentColor" stroke-width="2"/>
-              </svg>
-              <span class="qservice__name">Dashboards y herramientas internas</span>
-              <span class="qservice__desc">Paneles, CRMs y sistemas a medida</span>
-            </button>
-
-            <button type="button" class="qservice" role="radio" aria-checked="false" data-servicio="ia-aplicada">
-              <svg class="qservice__icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <circle cx="32" cy="32" r="8" stroke="currentColor" stroke-width="2"/>
-                <line x1="32" y1="24" x2="32" y2="12" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="39" y1="27" x2="52" y2="22" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="39" y1="37" x2="52" y2="42" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="25" y1="37" x2="12" y2="42" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="32" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="56" cy="19" r="4" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="56" cy="45" r="4" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="8" cy="45" r="4" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              <span class="qservice__name">IA aplicada</span>
-              <span class="qservice__desc">IA adentro de un proceso real</span>
-            </button>
-
-          </div>
-        </div>
-
-        <!-- ── PASO 02 · alcance + resumen ───────────────────── -->
-        <div class="quoter__layout" id="quoter-layout" hidden>
-
-          <div class="quoter__main">
-            <p class="quoter__step-label"><span class="quoter__step-num">02</span> Contanos el alcance</p>
-            <div class="quoter__modules" id="quoter-modules" aria-live="polite" aria-busy="true">
-              <p class="quoter__loading">Cargando los módulos del servicio…</p>
-            </div>
-          </div>
-
-          <aside class="quoter__summary">
-            <div class="qsummary" id="qsummary">
-
-              <!-- vista A · estimación -->
-              <div class="qsummary__view" data-view="precio">
-                <p class="qsummary__label">Estimación</p>
-                <p class="qsummary__price" id="qsummary-price">—</p>
-                <p class="qsummary__meta" id="qsummary-meta">Elegí las opciones que necesitás</p>
-
-                <button type="button" class="qsummary__toggle" id="qsummary-toggle" aria-expanded="false" aria-controls="qsummary-breakdown">
-                  Ver el desglose
-                </button>
-                <ul class="qsummary__breakdown" id="qsummary-breakdown" hidden></ul>
-
-                <button type="button" class="btn btn--ghost qsummary__cta" id="qsummary-cta">
-                  Recibir la propuesta en PDF
-                </button>
-                <p class="qsummary__note">Precio orientativo en pesos argentinos, calculado sobre las horas reales de cada módulo. No incluye IVA ni costos de terceros (hosting, licencias, APIs).</p>
-              </div>
-
-              <!-- vista B · datos de contacto -->
-              <div class="qsummary__view" data-view="form" hidden>
-                <button type="button" class="qsummary__back" id="qsummary-back">← Volver al detalle</button>
-                <p class="qsummary__label">Casi listo</p>
-                <p class="qsummary__form-title">¿A dónde te mandamos la propuesta?</p>
-
-                <form class="qform" id="qform" novalidate>
-                  <label class="qform__field">
-                    <span class="qform__label">Nombre y apellido *</span>
-                    <input type="text" name="nombre" autocomplete="name" required>
-                  </label>
-                  <label class="qform__field">
-                    <span class="qform__label">Email *</span>
-                    <input type="email" name="email" autocomplete="email" required>
-                  </label>
-                  <label class="qform__field">
-                    <span class="qform__label">Empresa o proyecto</span>
-                    <input type="text" name="empresa" autocomplete="organization">
-                  </label>
-                  <label class="qform__field">
-                    <span class="qform__label">Teléfono / WhatsApp</span>
-                    <input type="tel" name="telefono" autocomplete="tel" inputmode="tel">
-                  </label>
-                  <label class="qform__field">
-                    <span class="qform__label">Contanos brevemente el proyecto</span>
-                    <textarea name="mensaje" rows="3"></textarea>
-                  </label>
-
-                  <p class="qform__error" id="qform-error" role="alert" hidden></p>
-
-                  <button type="submit" class="btn btn--ghost qform__submit" id="qform-submit">
-                    Enviarme la propuesta
-                  </button>
-                  <p class="qform__legal">Al enviar aceptás que te contactemos por esta consulta. Ver la <a href="privacidad.html">política de privacidad</a>.</p>
-                </form>
-              </div>
-
-              <!-- vista C · enviado -->
-              <div class="qsummary__view" data-view="ok" hidden>
-                <div class="qsummary__check" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2"/><path d="M14 24.5 21 31.5 34 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </div>
-                <p class="qsummary__form-title">Te mandamos la propuesta</p>
-                <p class="qsummary__meta" id="qsummary-ok-mail">Revisá tu casilla en los próximos minutos.</p>
-                <p class="qsummary__note">Si no la ves, fijate en spam o promociones. Llega desde <strong>notificaciones@chichalabs.studio</strong>.</p>
-                <a class="btn btn--ghost qsummary__cta" data-location="cotizador_ok"
-                   href="https://calendar.app.google/YrXbTqH8iREgLShf6" target="_blank" rel="noopener noreferrer">
-                  Agendá una reunión
-                </a>
-              </div>
-
-            </div>
-          </aside>
-        </div>
-
-        <!-- ── fallback · si el cotizador no está disponible ── -->
-        <div class="quoter__fallback" id="quoter-fallback" hidden>
-          <p class="quoter__fallback-title">El cotizador no está respondiendo en este momento.</p>
-          <p>Escribinos y te pasamos el presupuesto igual, en el día.</p>
-          <div class="quoter__fallback-actions">
-            <a data-location="cotizador_fallback" class="btn btn--ghost"
-               href="https://wa.me/5491178221468?text=Hola%2C%20quiero%20cotizar%20un%20proyecto%20de%20software%20para%20mi%20negocio.%20%C2%BFMe%20ayud%C3%A1s%20a%20ver%20qu%C3%A9%20conviene%20construir%3F"
-               target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
-            <a data-location="cotizador_fallback" class="btn btn--text"
-               href="https://calendar.app.google/YrXbTqH8iREgLShf6" target="_blank" rel="noopener noreferrer">Agendá una reunión →</a>
-          </div>
-        </div>
-
+      <div class="quoter__intro">
+        <h2 class="quoter__title">Sabé cuánto sale <span class="mark">ahora mismo</span></h2>
+        <p>Elegí qué necesitás, marcá las opciones y mirá el precio actualizarse solo. Cuando te cierre, te mandamos la propuesta completa en PDF por email, con el detalle de todo lo que incluye.</p>
       </div>
+
+      <div class="quoter" data-inline></div>
+
+      <noscript>
+        <div class="quoter__fallback" style="display:block">
+          <p class="quoter__fallback-title">El cotizador necesita JavaScript.</p>
+          <p>Escribinos y te pasamos el precio igual, en el día.</p>
+          <div class="quoter__fallback-actions">
+            <a class="btn btn--ghost" href="https://wa.me/5491178221468?text=Hola%2C%20quiero%20cotizar%20un%20proyecto%20de%20software%20para%20mi%20negocio.%20%C2%BFMe%20ayud%C3%A1s%20a%20ver%20qu%C3%A9%20conviene%20construir%3F" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
+            <a class="btn btn--text" href="https://calendar.app.google/YrXbTqH8iREgLShf6" target="_blank" rel="noopener noreferrer">Agendá una reunión →</a>
+          </div>
+        </div>
+      </noscript>
     </div>
   </section>
 
@@ -1008,7 +862,7 @@
       <p class="cta-final__sub">Armá tu cotización en el cotizador y recibí la propuesta completa en PDF por email, con el desglose módulo por módulo. Sin reunión previa.</p>
       <div class="cta-final__actions">
         <a href="#cotizador" class="btn btn--ghost btn--lg">
-          Quiero mi cotización
+          Quiero saber el precio
         </a>
         <a data-location="cta_final" href="https://calendar.app.google/YrXbTqH8iREgLShf6"
            class="btn btn--text" target="_blank" rel="noopener noreferrer">

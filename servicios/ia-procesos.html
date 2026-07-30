@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="../css/tokens.css">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/landing.css">
+  <link rel="stylesheet" href="../css/cotizador.css">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -97,7 +98,7 @@
     </div>
     <div class="nav-mobile__ctas">
       <a data-location="nav_mobile" href="https://calendar.app.google/YrXbTqH8iREgLShf6" class="btn btn--ghost" target="_blank" rel="noopener noreferrer">Agendá una reunión</a>
-      <a href="../index.html?servicio=ia-aplicada#cotizador" class="btn btn--text">Quiero mi cotización →</a>
+      <button type="button" class="btn btn--text" data-cotizador="ia-aplicada" data-location="nav_mobile">Quiero saber el precio →</button>
       <a data-location="nav_mobile" href="https://wa.me/5491178221468?text=Hola%20ChichaLabs%20%F0%9F%91%8B%20Vengo%20de%20la%20landing%20de%20IA%20aplicada.%20Mi%20equipo%20pierde%20horas%20en%20tareas%20repetitivas.%20Quiero%20saber%20qu%C3%A9%20se%20puede%20automatizar%20con%20IA.%20%C2%BFC%C3%B3mo%20lo%20resolver%C3%ADan%3F"
          class="btn btn--text" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp →</a>
     </div>
@@ -122,6 +123,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.4-1.7A11.9 11.9 0 0 0 12 24c6.6 0 12-5.4 12-12 0-3.2-1.3-6.2-3.5-8.5ZM12 22c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.8 1 1-3.7-.2-.4A10 10 0 1 1 12 22Zm5.5-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-.9 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5v-.5c-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.5-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4l-.4-.4Z"/></svg>
             Quiero automatizar tareas con IA
           </a>
+          <button type="button" class="btn btn--outline btn--lg" data-cotizador="ia-aplicada" data-location="hero_cotizador">Quiero saber el precio</button>
         </div>
         <p class="lp-trust">
           <span>Respuesta por WhatsApp</span>
@@ -339,9 +341,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.4-1.7A11.9 11.9 0 0 0 12 24c6.6 0 12-5.4 12-12 0-3.2-1.3-6.2-3.5-8.5ZM12 22c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.8 1 1-3.7-.2-.4A10 10 0 1 1 12 22Zm5.5-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-.9 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5v-.5c-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.5-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4l-.4-.4Z"/></svg>
             Pedir mi presupuesto
           </a>
-          <a data-location="inversion_cotizador" href="../index.html?servicio=ia-aplicada#cotizador" class="btn btn--text">
-            Ver precio estimado en 1 minuto →
-          </a>
+          <button type="button" class="btn btn--text" data-cotizador="ia-aplicada" data-location="inversion_cotizador">Quiero saber el precio →</button>
         </div>
       </div>
     </div>
@@ -388,6 +388,7 @@
   <script defer src="../js/vendor/gsap.min.js"></script>
   <script defer src="../js/vendor/ScrollTrigger.min.js"></script>
   <script defer src="../js/main.js"></script>
+  <script defer src="../js/cotizador.js"></script>
   <script defer src="../js/pixel-events.js"></script>
 </body>
 </html>
