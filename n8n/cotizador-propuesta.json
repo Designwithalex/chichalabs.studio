@@ -10,7 +10,7 @@
           "allowedOrigins": "https://chichalabs.studio,https://www.chichalabs.studio"
         }
       },
-      "id": "e69f2944-ad19-43ee-9195-86ef7bfe6914",
+      "id": "a1e62561-d2fd-43b3-b534-4e676602c586",
       "name": "Webhook propuesta",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -18,7 +18,7 @@
         -620,
         0
       ],
-      "webhookId": "79cc1bbb-13e4-4ddb-a602-75ff3e9cbb36"
+      "webhookId": "31acca9f-8f3e-40c7-87c2-5ed678949f36"
     },
     {
       "parameters": {
@@ -46,7 +46,7 @@
           "timeout": 15000
         }
       },
-      "id": "314551b3-809e-40f5-8a9c-e17ff081fa7e",
+      "id": "1cd31733-a0cf-4c41-92ed-a60648b2790a",
       "name": "Notion · módulos",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -66,7 +66,7 @@
       "parameters": {
         "jsCode": "\n/* ── Configuración editable ──────────────────────────────────────\n   VALOR_HORA es el único número de negocio que vive en n8n. Las horas\n   de cada módulo viven en Notion y se editan allá, no acá.          */\nconst VALOR_HORA = 45000;\n\n/* id que manda la web  →  valor exacto de la columna \"Servicio\" en Notion.\n   Para sumar un servicio nuevo: agregá la fila acá y en la web.       */\nconst SERVICIOS = {\n  'web-comercial':    'Web comercial',\n  'automatizaciones': 'Automatizaciones',\n  'dashboards':       'Dashboards y herramientas internas',\n  'ia-aplicada':      'IA aplicada'\n};\n\nconst MAX_CANTIDAD = 20;   // techo por módulo, para que nadie pida 9999\n\nfunction txt(p) {\n  if (!p) return '';\n  const arr = p.title || p.rich_text;\n  return Array.isArray(arr) ? arr.map(t => t.plain_text).join('') : '';\n}\nconst sel = (p) => (p && p.select ? p.select.name : '');\nconst num = (p) => (p && typeof p.number === 'number' ? p.number : 0);\nconst chk = (p) => !!(p && p.checkbox);\n\n/* Convierte las filas crudas de Notion en los módulos de un servicio. */\nfunction modulosDe(results, servicioNombre) {\n  return (results || [])\n    .map((r) => {\n      const p = r.properties || {};\n      return {\n        id:          String(r.id).replace(/-/g, ''),\n        nombre:      txt(p['Módulo']),\n        descripcion: txt(p['Descripción']),\n        pregunta:    txt(p['Pregunta del formulario']),\n        categoria:   sel(p['Categoría']),\n        servicio:    sel(p['Servicio']),\n        seAplica:    sel(p['Se aplica']),\n        horas:       num(p['Horas']),\n        activo:      chk(p['Activo'])\n      };\n    })\n    .filter((m) => m.activo && m.servicio === servicioNombre && m.horas > 0)\n    /* Las preguntas entre paréntesis no se le muestran al cliente:\n         · Base  → se incluye siempre, no se pregunta\n         · resto → no se cotiza desde la web (ej. \"Ronda de revisión extra\") */\n    .filter((m) => m.categoria === 'Base' || !/^\\s*\\(/.test(m.pregunta))\n    .map((m) => Object.assign({}, m, {\n      control: m.categoria === 'Base'\n        ? 'incluido'\n        : (m.seAplica === 'Una vez' ? 'toggle' : 'cantidad')\n    }))\n    .sort((a, b) => {\n      if (a.categoria === 'Base') return -1;\n      if (b.categoria === 'Base') return 1;\n      return a.nombre.localeCompare(b.nombre, 'es');\n    });\n}\n\n/* Resuelve el precio. NUNCA confía en lo que manda el navegador:\n     · los módulos Base entran siempre en 1\n     · las cantidades se recortan a [0, MAX_CANTIDAD]\n     · los ids desconocidos se ignoran                                */\nfunction cotizar(modulos, seleccion) {\n  const desglose = [];\n  let horas = 0;\n\n  for (const m of modulos) {\n    let cant;\n    if (m.control === 'incluido') {\n      cant = 1;\n    } else {\n      const pedido = Number((seleccion || {})[m.id]);\n      cant = Number.isFinite(pedido) ? Math.floor(pedido) : 0;\n      cant = Math.max(0, Math.min(MAX_CANTIDAD, cant));\n      if (m.control === 'toggle') cant = cant > 0 ? 1 : 0;\n    }\n    if (cant === 0) continue;\n\n    const h = m.horas * cant;\n    horas += h;\n    desglose.push({\n      id: m.id,\n      modulo: m.nombre,\n      descripcion: m.descripcion,\n      categoria: m.categoria,\n      cantidad: cant,\n      horas: h,\n      subtotal: h * VALOR_HORA\n    });\n  }\n\n  return { horas: horas, valor_hora: VALOR_HORA, total: horas * VALOR_HORA, desglose: desglose };\n}\n\n/* ══ Arma la propuesta completa para el PDF y el email ════════════ */\nconst body = $('Webhook propuesta').first().json.body || {};\nconst c = body.contacto || {};\n\nconst nombre = String(c.nombre || '').trim().slice(0, 120);\nconst email  = String(c.email  || '').trim().slice(0, 160);\n\n/* Validación mínima: sin email no hay a dónde mandar nada. */\nif (!nombre || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(email)) {\n  throw new Error('Contacto inválido: falta nombre o el email no es válido');\n}\n\nconst servicioId = String(body.servicio || '');\nconst servicioNombre = SERVICIOS[servicioId];\nif (!servicioNombre) throw new Error('Servicio desconocido: ' + servicioId);\n\nconst modulos = modulosDe($input.first().json.results, servicioNombre);\nconst r = cotizar(modulos, body.seleccion);\nif (!r.desglose.length) throw new Error('La selección quedó vacía');\n\n/* Número de propuesta: CL-<MMYY>-<4 dígitos del timestamp>. Legible y\n   suficientemente único para el volumen que manejamos. */\nconst ahora = new Date();\nconst dosD = (n) => String(n).padStart(2, '0');\nconst numero = 'CL-' + dosD(ahora.getMonth() + 1) + dosD(ahora.getFullYear() % 100)\n             + '-' + String(Date.now()).slice(-4);\n\nconst MESES = ['enero','febrero','marzo','abril','mayo','junio','julio',\n               'agosto','septiembre','octubre','noviembre','diciembre'];\nconst fecha = ahora.getDate() + ' de ' + MESES[ahora.getMonth()] + ' de ' + ahora.getFullYear();\n\n/* Token aleatorio (96 bits) para la copia descargable del PDF. La URL no\n   es adivinable y eso es lo unico que la protege: nunca la pongas en un\n   lugar publico ni la loguees. El endpoint la guarda en /propuestas/. */\nconst token = Array.from({ length: 3 }, () =>\n  Math.floor(Math.random() * 0xffffffff).toString(16).padStart(8, '0')).join('');\nconst pdfUrl = 'https://chichalabs.studio/propuestas/' + numero + '-' + token + '.pdf';\n\nreturn [{\n  json: {\n    numero: numero,\n    token: token,\n    pdf_url: pdfUrl,\n    fecha: fecha,\n    validez: '15 días',\n    servicio: servicioNombre,\n    servicio_id: servicioId,\n    cliente: {\n      nombre: nombre,\n      email: email,\n      empresa:  String(c.empresa  || '').trim().slice(0, 160),\n      telefono: String(c.telefono || '').trim().slice(0, 40)\n    },\n    mensaje: String(c.mensaje || '').trim().slice(0, 1200),\n    modulos: r.desglose,\n    horas: r.horas,\n    valor_hora: r.valor_hora,\n    total: r.total,\n    total_formateado: '$ ' + r.total.toLocaleString('es-AR', { maximumFractionDigits: 0 }),\n    calendar: 'https://calendar.app.google/YrXbTqH8iREgLShf6',\n    origen: String(body.origen || '')\n  }\n}];\n"
       },
-      "id": "2803bd7d-836a-4950-813e-f99d0f8ead86",
+      "id": "387913e7-6255-4e6f-bb5e-f58550a0c178",
       "name": "Armar propuesta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -94,7 +94,7 @@
           "timeout": 30000
         }
       },
-      "id": "95a6373a-2240-474d-845f-96fdaadedf6e",
+      "id": "f56dd7a8-896f-4317-adb3-a1cdec5dfd28",
       "name": "Generar PDF",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -114,7 +114,7 @@
       "parameters": {
         "jsCode": "\n/* ══ Punto único de salida ════════════════════════════════════════\n   Todo lo que se le manda al cliente sale de acá. Hoy hay una sola\n   rama (Email). En FASE 2, el nodo de WhatsApp Cloud API se cuelga\n   de ESTE MISMO nodo como segunda rama — no hay que tocar nada de\n   lo de arriba: el PDF ya viene generado y los datos ya están acá. */\nconst p = $('Armar propuesta').first().json;\n\nreturn [{\n  json: {\n    nombre: p.cliente.nombre,\n    email: p.cliente.email,\n    telefono: p.cliente.telefono,\n    servicio: p.servicio,\n    numero: p.numero,\n    total_formateado: p.total_formateado,\n    horas: p.horas,\n    calendar: p.calendar,\n    /* copia descargable, por si el cliente lee en el celular y no\n       encuentra el adjunto */\n    pdf_url: p.pdf_url,\n    /* nombre del adjunto, usado por el nodo de email */\n    archivo: 'Propuesta-ChichaLabs-' + p.numero + '.pdf'\n  },\n  binary: $input.first().binary   // el PDF que devolvió el endpoint\n}];\n"
       },
-      "id": "a953a9a8-d9b8-4c7a-ba8e-c940273862c0",
+      "id": "381fbeeb-08bb-42b1-a7eb-1fdcaeaad28b",
       "name": "Preparar envío",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -128,7 +128,7 @@
         "fromEmail": "notificaciones@chichalabs.studio",
         "toEmail": "={{ $json.email }}",
         "subject": "=Tu propuesta de {{ $json.servicio }} — ChichaLabs Studio",
-        "html": "=<!DOCTYPE html>\n<html><body style=\"margin:0;padding:0;background:#F4F5F6;font-family:Arial,Helvetica,sans-serif;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#F4F5F6;padding:28px 12px;\">\n<tr><td align=\"center\">\n<table width=\"560\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;background:#FFFFFF;border-radius:12px;overflow:hidden;\">\n  <tr><td style=\"background:#0A0A0B;padding:18px 26px;font-family:'Courier New',monospace;font-size:15px;color:#FFFFFF;letter-spacing:1px;\">\n    [ CHICHALABS ] <span style=\"color:#2CE58B;\">STUDIO</span>\n  </td></tr>\n  <tr><td style=\"padding:30px 26px 8px;\">\n    <p style=\"margin:0 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8A9099;font-family:'Courier New',monospace;\">Tu propuesta</p>\n    <h1 style=\"margin:0 0 14px;font-size:23px;line-height:1.25;color:#0A0A0B;\">Hola {{ $json.nombre }}, acá está tu propuesta</h1>\n    <p style=\"margin:0 0 14px;font-size:15px;line-height:1.6;color:#4A4E55;\">\n      Te dejamos el PDF con el presupuesto de <strong>{{ $json.servicio }}</strong>, con el desglose de cada módulo y las horas que lleva. Va adjunto a este mail y también lo podés descargar con el botón de abajo.\n    </p>\n  </td></tr>\n  <tr><td style=\"padding:0 26px;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#0A0A0B;border-radius:10px;\">\n      <tr><td style=\"padding:18px 20px;\">\n        <p style=\"margin:0 0 4px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8A9099;font-family:'Courier New',monospace;\">Total estimado</p>\n        <p style=\"margin:0;font-size:30px;font-weight:bold;color:#2CE58B;\">{{ $json.total_formateado }}</p>\n        <p style=\"margin:6px 0 0;font-size:13px;color:#A1A1AA;\">{{ $json.horas }} horas de trabajo · Propuesta {{ $json.numero }}</p>\n      </td></tr>\n    </table>\n  </td></tr>\n  <tr><td style=\"padding:24px 26px 8px;\">\n    <p style=\"margin:0 0 16px;font-size:15px;line-height:1.6;color:#4A4E55;\">\n      Si querés repasar el alcance, sumar o sacar módulos, o resolver dudas antes de arrancar, agendá una reunión de 20 minutos cuando te quede cómodo:\n    </p>\n    <table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 22px;\"><tr>\n      <td style=\"padding-right:10px;\">\n        <a href=\"{{ $json.calendar }}\" style=\"display:inline-block;background:#2CE58B;color:#05130B;text-decoration:none;font-weight:bold;font-size:15px;padding:13px 26px;border-radius:8px;\">Agendá una reunión</a>\n      </td>\n      <td>\n        <a href=\"{{ $json.pdf_url }}\" style=\"display:inline-block;background:#FFFFFF;color:#0A0A0B;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 24px;border-radius:8px;border:1px solid #D3D6DA;\">Descargar la propuesta</a>\n      </td>\n    </tr></table>\n    <p style=\"margin:0 0 6px;font-size:13px;line-height:1.6;color:#8A9099;\">\n      El precio del PDF es una estimación automática según lo que elegiste en el cotizador. El alcance final lo confirmamos juntos antes de arrancar.\n    </p>\n  </td></tr>\n  <tr><td style=\"padding:20px 26px 26px;border-top:1px solid #E4E6E9;\">\n    <p style=\"margin:0;font-size:12px;line-height:1.6;color:#8A9099;\">\n      <strong style=\"color:#0A0A0B;\">ChichaLabs Studio</strong> — Software a medida.<br>\n      Buenos Aires, Argentina · chichalabs.studio\n    </p>\n  </td></tr>\n</table>\n</td></tr></table>\n</body></html>",
+        "html": "=<!DOCTYPE html>\n<html lang=\"es-AR\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head>\n<body style=\"margin:0;padding:0;background:#F4F5F6;font-family:Arial,Helvetica,sans-serif;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#F4F5F6;padding:28px 12px;\">\n<tr><td align=\"center\">\n<table width=\"560\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;background:#FFFFFF;border-radius:12px;overflow:hidden;\">\n  <tr><td style=\"background:#0A0A0B;padding:18px 26px;font-family:'Courier New',monospace;font-size:15px;color:#FFFFFF;letter-spacing:1px;\">\n    [ CHICHALABS ] <span style=\"color:#2CE58B;\">STUDIO</span>\n  </td></tr>\n  <tr><td style=\"padding:30px 26px 8px;\">\n    <p style=\"margin:0 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8A9099;font-family:'Courier New',monospace;\">Tu propuesta</p>\n    <h1 style=\"margin:0 0 14px;font-size:23px;line-height:1.25;color:#0A0A0B;\">Hola {{ $json.nombre }}, acá está tu propuesta</h1>\n    <p style=\"margin:0 0 14px;font-size:15px;line-height:1.6;color:#4A4E55;\">\n      Te dejamos el PDF con el presupuesto de <strong>{{ $json.servicio }}</strong>, con el desglose de cada módulo y las horas que lleva. Va adjunto a este mail y también lo podés descargar con el botón de abajo.\n    </p>\n  </td></tr>\n  <tr><td style=\"padding:0 26px;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#0A0A0B;border-radius:10px;\">\n      <tr><td style=\"padding:18px 20px;\">\n        <p style=\"margin:0 0 4px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8A9099;font-family:'Courier New',monospace;\">Total estimado</p>\n        <p style=\"margin:0;font-size:30px;font-weight:bold;color:#2CE58B;\">{{ $json.total_formateado }}</p>\n        <p style=\"margin:6px 0 0;font-size:13px;color:#A1A1AA;\">{{ $json.horas }} horas de trabajo · Propuesta {{ $json.numero }}</p>\n      </td></tr>\n    </table>\n  </td></tr>\n  <tr><td style=\"padding:24px 26px 8px;\">\n    <p style=\"margin:0 0 16px;font-size:15px;line-height:1.6;color:#4A4E55;\">\n      Si querés repasar el alcance, sumar o sacar módulos, o resolver dudas antes de arrancar, agendá una reunión de 20 minutos cuando te quede cómodo:\n    </p>\n    <table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 22px;\"><tr>\n      <td style=\"padding-right:10px;\">\n        <a href=\"{{ $json.calendar }}\" style=\"display:inline-block;background:#2CE58B;color:#05130B;text-decoration:none;font-weight:bold;font-size:15px;padding:13px 26px;border-radius:8px;\">Agendá una reunión</a>\n      </td>\n      <td>\n        <a href=\"{{ $json.pdf_url }}\" style=\"display:inline-block;background:#FFFFFF;color:#0A0A0B;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 24px;border-radius:8px;border:1px solid #D3D6DA;\">Descargar la propuesta</a>\n      </td>\n    </tr></table>\n    <p style=\"margin:0 0 6px;font-size:13px;line-height:1.6;color:#8A9099;\">\n      El precio del PDF es una estimación automática según lo que elegiste en el cotizador. El alcance final lo confirmamos juntos antes de arrancar.\n    </p>\n  </td></tr>\n  <tr><td style=\"padding:20px 26px 26px;border-top:1px solid #E4E6E9;\">\n    <p style=\"margin:0;font-size:12px;line-height:1.6;color:#8A9099;\">\n      <strong style=\"color:#0A0A0B;\">ChichaLabs Studio</strong> — Software a medida.<br>\n      Buenos Aires, Argentina · chichalabs.studio\n    </p>\n  </td></tr>\n</table>\n</td></tr></table>\n</body>\n</html>",
         "options": {
           "attachments": "data",
           "senderName": "ChichaLabs Studio",
@@ -136,7 +136,7 @@
           "appendAttribution": false
         }
       },
-      "id": "edce6a71-09c9-4923-ba49-74e190b4b80e",
+      "id": "88344aa9-3a6d-4d06-b894-a96a032d83d8",
       "name": "Email al cliente",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -156,7 +156,7 @@
         "fromEmail": "notificaciones@chichalabs.studio",
         "toEmail": "notificaciones@chichalabs.studio",
         "subject": "=[Cotizador] {{ $json.servicio }} — {{ $json.total_formateado }} — {{ $json.nombre }}",
-        "html": "=<h2 style=\"font-family:Arial,sans-serif;\">Nueva cotización desde la web</h2>\n<table cellpadding=\"6\" style=\"font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse;\">\n  <tr><td><b>Servicio</b></td><td>{{ $json.servicio }}</td></tr>\n  <tr><td><b>Total</b></td><td>{{ $json.total_formateado }} ({{ $json.horas }} h)</td></tr>\n  <tr><td><b>Propuesta</b></td><td>{{ $json.numero }}</td></tr>\n  <tr><td><b>Nombre</b></td><td>{{ $json.nombre }}</td></tr>\n  <tr><td><b>Email</b></td><td>{{ $json.email }}</td></tr>\n  <tr><td><b>Teléfono</b></td><td>{{ $json.telefono }}</td></tr>\n</table>\n<p style=\"font-family:Arial,sans-serif;font-size:13px;color:#666;\">El PDF va adjunto, igual que al cliente.</p>",
+        "html": "=<!DOCTYPE html>\n<html lang=\"es-AR\"><head><meta charset=\"UTF-8\"></head><body>\n<h2 style=\"font-family:Arial,sans-serif;\">Nueva cotización desde la web</h2>\n<table cellpadding=\"6\" style=\"font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse;\">\n  <tr><td><b>Servicio</b></td><td>{{ $json.servicio }}</td></tr>\n  <tr><td><b>Total</b></td><td>{{ $json.total_formateado }} ({{ $json.horas }} h)</td></tr>\n  <tr><td><b>Propuesta</b></td><td>{{ $json.numero }}</td></tr>\n  <tr><td><b>Nombre</b></td><td>{{ $json.nombre }}</td></tr>\n  <tr><td><b>Email</b></td><td>{{ $json.email }}</td></tr>\n  <tr><td><b>Teléfono</b></td><td>{{ $json.telefono }}</td></tr>\n</table>\n<p style=\"font-family:Arial,sans-serif;font-size:13px;color:#666;\">El PDF va adjunto, igual que al cliente.</p>\n</body></html>",
         "options": {
           "attachments": "data",
           "senderName": "Cotizador ChichaLabs",
@@ -164,7 +164,7 @@
           "appendAttribution": false
         }
       },
-      "id": "18c0adbc-5903-48e4-9ace-4839af5c4076",
+      "id": "c22a3501-b9ab-4be7-9a6b-76039a01c850",
       "name": "Aviso interno",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -181,7 +181,7 @@
     },
     {
       "parameters": {},
-      "id": "f4c393bd-be7e-463f-9514-8bae8da78cfe",
+      "id": "148b293d-1186-483f-9fd1-cab378b3c7ad",
       "name": "FASE 2 · acá va WhatsApp",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -206,7 +206,7 @@
           }
         }
       },
-      "id": "ae232022-889f-4112-a533-c8a49e9b7af0",
+      "id": "71520a35-14ce-4839-a3a5-7995d6e762e4",
       "name": "Confirmar al formulario",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,

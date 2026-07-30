@@ -10,7 +10,7 @@
           "allowedOrigins": "https://chichalabs.studio,https://www.chichalabs.studio"
         }
       },
-      "id": "3b7f7b02-770e-42ed-bae7-fece18bf33e3",
+      "id": "c6a162d8-29b7-4d66-941c-704d34eedb13",
       "name": "Webhook módulos",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -18,7 +18,7 @@
         -460,
         -160
       ],
-      "webhookId": "39bedbbf-6d3a-45bd-8cfb-e244e2be4fee"
+      "webhookId": "d2358eaf-7569-4e30-af37-9473241286e1"
     },
     {
       "parameters": {
@@ -46,7 +46,7 @@
           "timeout": 15000
         }
       },
-      "id": "5dd3c259-338a-4b08-b24d-dd74ba708d94",
+      "id": "0f12f673-8e98-4931-b50c-e57f8aeaf398",
       "name": "Notion · módulos",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -66,7 +66,7 @@
       "parameters": {
         "jsCode": "\n/* ── Configuración editable ──────────────────────────────────────\n   VALOR_HORA es el único número de negocio que vive en n8n. Las horas\n   de cada módulo viven en Notion y se editan allá, no acá.          */\nconst VALOR_HORA = 45000;\n\n/* id que manda la web  →  valor exacto de la columna \"Servicio\" en Notion.\n   Para sumar un servicio nuevo: agregá la fila acá y en la web.       */\nconst SERVICIOS = {\n  'web-comercial':    'Web comercial',\n  'automatizaciones': 'Automatizaciones',\n  'dashboards':       'Dashboards y herramientas internas',\n  'ia-aplicada':      'IA aplicada'\n};\n\nconst MAX_CANTIDAD = 20;   // techo por módulo, para que nadie pida 9999\n\nfunction txt(p) {\n  if (!p) return '';\n  const arr = p.title || p.rich_text;\n  return Array.isArray(arr) ? arr.map(t => t.plain_text).join('') : '';\n}\nconst sel = (p) => (p && p.select ? p.select.name : '');\nconst num = (p) => (p && typeof p.number === 'number' ? p.number : 0);\nconst chk = (p) => !!(p && p.checkbox);\n\n/* Convierte las filas crudas de Notion en los módulos de un servicio. */\nfunction modulosDe(results, servicioNombre) {\n  return (results || [])\n    .map((r) => {\n      const p = r.properties || {};\n      return {\n        id:          String(r.id).replace(/-/g, ''),\n        nombre:      txt(p['Módulo']),\n        descripcion: txt(p['Descripción']),\n        pregunta:    txt(p['Pregunta del formulario']),\n        categoria:   sel(p['Categoría']),\n        servicio:    sel(p['Servicio']),\n        seAplica:    sel(p['Se aplica']),\n        horas:       num(p['Horas']),\n        activo:      chk(p['Activo'])\n      };\n    })\n    .filter((m) => m.activo && m.servicio === servicioNombre && m.horas > 0)\n    /* Las preguntas entre paréntesis no se le muestran al cliente:\n         · Base  → se incluye siempre, no se pregunta\n         · resto → no se cotiza desde la web (ej. \"Ronda de revisión extra\") */\n    .filter((m) => m.categoria === 'Base' || !/^\\s*\\(/.test(m.pregunta))\n    .map((m) => Object.assign({}, m, {\n      control: m.categoria === 'Base'\n        ? 'incluido'\n        : (m.seAplica === 'Una vez' ? 'toggle' : 'cantidad')\n    }))\n    .sort((a, b) => {\n      if (a.categoria === 'Base') return -1;\n      if (b.categoria === 'Base') return 1;\n      return a.nombre.localeCompare(b.nombre, 'es');\n    });\n}\n\n/* Resuelve el precio. NUNCA confía en lo que manda el navegador:\n     · los módulos Base entran siempre en 1\n     · las cantidades se recortan a [0, MAX_CANTIDAD]\n     · los ids desconocidos se ignoran                                */\nfunction cotizar(modulos, seleccion) {\n  const desglose = [];\n  let horas = 0;\n\n  for (const m of modulos) {\n    let cant;\n    if (m.control === 'incluido') {\n      cant = 1;\n    } else {\n      const pedido = Number((seleccion || {})[m.id]);\n      cant = Number.isFinite(pedido) ? Math.floor(pedido) : 0;\n      cant = Math.max(0, Math.min(MAX_CANTIDAD, cant));\n      if (m.control === 'toggle') cant = cant > 0 ? 1 : 0;\n    }\n    if (cant === 0) continue;\n\n    const h = m.horas * cant;\n    horas += h;\n    desglose.push({\n      id: m.id,\n      modulo: m.nombre,\n      descripcion: m.descripcion,\n      categoria: m.categoria,\n      cantidad: cant,\n      horas: h,\n      subtotal: h * VALOR_HORA\n    });\n  }\n\n  return { horas: horas, valor_hora: VALOR_HORA, total: horas * VALOR_HORA, desglose: desglose };\n}\n\n/* ══ Devuelve los módulos de un servicio SIN horas ni precios ══════\n   Es lo que dibuja el formulario de la web. Si acá mandáramos las\n   horas, la tabla de precios quedaría a la vista en el navegador.  */\nconst q = $('Webhook módulos').first().json.query || {};\nconst servicioId = String(q.servicio || '');\nconst servicioNombre = SERVICIOS[servicioId];\n\nif (!servicioNombre) {\n  return [{ json: { error: 'servicio desconocido', modulos: [] } }];\n}\n\nconst modulos = modulosDe($input.first().json.results, servicioNombre);\n\nreturn [{\n  json: {\n    servicio: { id: servicioId, nombre: servicioNombre },\n    modulos: modulos.map((m) => ({\n      id: m.id,\n      nombre: m.nombre,\n      descripcion: m.descripcion,\n      pregunta: m.pregunta,\n      categoria: m.categoria,\n      control: m.control,\n      max: m.control === 'cantidad' ? 10 : undefined\n    }))\n  }\n}];\n"
       },
-      "id": "35f504c4-1a26-44c1-a324-8c3efee76793",
+      "id": "1454a5dc-9121-4a16-b337-fa192d5979fc",
       "name": "Armar formulario",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -90,7 +90,7 @@
           }
         }
       },
-      "id": "7e974a75-7fb4-4d32-a078-46c6ef96d3c5",
+      "id": "208aff23-e97b-4a57-9680-2cdeb55c0b78",
       "name": "Responder módulos",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -108,7 +108,7 @@
           "allowedOrigins": "https://chichalabs.studio,https://www.chichalabs.studio"
         }
       },
-      "id": "283986da-a08d-4ed2-8a8a-04c758f90f8b",
+      "id": "497fab8b-6e0b-4ccf-8ac8-0ad7cde944db",
       "name": "Webhook precio",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -116,7 +116,7 @@
         -460,
         140
       ],
-      "webhookId": "3f4ee694-3f7a-4c3a-9a83-b0d3a2bc9a48"
+      "webhookId": "bd624da8-dd96-4afe-ad88-58bfb10721d7"
     },
     {
       "parameters": {
@@ -144,7 +144,7 @@
           "timeout": 15000
         }
       },
-      "id": "1898d91e-6e63-46cb-9420-c0ceeb567383",
+      "id": "9dcbae58-f433-454d-9ba2-fe99e6d303be",
       "name": "Notion · precio",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -164,7 +164,7 @@
       "parameters": {
         "jsCode": "\n/* ── Configuración editable ──────────────────────────────────────\n   VALOR_HORA es el único número de negocio que vive en n8n. Las horas\n   de cada módulo viven en Notion y se editan allá, no acá.          */\nconst VALOR_HORA = 45000;\n\n/* id que manda la web  →  valor exacto de la columna \"Servicio\" en Notion.\n   Para sumar un servicio nuevo: agregá la fila acá y en la web.       */\nconst SERVICIOS = {\n  'web-comercial':    'Web comercial',\n  'automatizaciones': 'Automatizaciones',\n  'dashboards':       'Dashboards y herramientas internas',\n  'ia-aplicada':      'IA aplicada'\n};\n\nconst MAX_CANTIDAD = 20;   // techo por módulo, para que nadie pida 9999\n\nfunction txt(p) {\n  if (!p) return '';\n  const arr = p.title || p.rich_text;\n  return Array.isArray(arr) ? arr.map(t => t.plain_text).join('') : '';\n}\nconst sel = (p) => (p && p.select ? p.select.name : '');\nconst num = (p) => (p && typeof p.number === 'number' ? p.number : 0);\nconst chk = (p) => !!(p && p.checkbox);\n\n/* Convierte las filas crudas de Notion en los módulos de un servicio. */\nfunction modulosDe(results, servicioNombre) {\n  return (results || [])\n    .map((r) => {\n      const p = r.properties || {};\n      return {\n        id:          String(r.id).replace(/-/g, ''),\n        nombre:      txt(p['Módulo']),\n        descripcion: txt(p['Descripción']),\n        pregunta:    txt(p['Pregunta del formulario']),\n        categoria:   sel(p['Categoría']),\n        servicio:    sel(p['Servicio']),\n        seAplica:    sel(p['Se aplica']),\n        horas:       num(p['Horas']),\n        activo:      chk(p['Activo'])\n      };\n    })\n    .filter((m) => m.activo && m.servicio === servicioNombre && m.horas > 0)\n    /* Las preguntas entre paréntesis no se le muestran al cliente:\n         · Base  → se incluye siempre, no se pregunta\n         · resto → no se cotiza desde la web (ej. \"Ronda de revisión extra\") */\n    .filter((m) => m.categoria === 'Base' || !/^\\s*\\(/.test(m.pregunta))\n    .map((m) => Object.assign({}, m, {\n      control: m.categoria === 'Base'\n        ? 'incluido'\n        : (m.seAplica === 'Una vez' ? 'toggle' : 'cantidad')\n    }))\n    .sort((a, b) => {\n      if (a.categoria === 'Base') return -1;\n      if (b.categoria === 'Base') return 1;\n      return a.nombre.localeCompare(b.nombre, 'es');\n    });\n}\n\n/* Resuelve el precio. NUNCA confía en lo que manda el navegador:\n     · los módulos Base entran siempre en 1\n     · las cantidades se recortan a [0, MAX_CANTIDAD]\n     · los ids desconocidos se ignoran                                */\nfunction cotizar(modulos, seleccion) {\n  const desglose = [];\n  let horas = 0;\n\n  for (const m of modulos) {\n    let cant;\n    if (m.control === 'incluido') {\n      cant = 1;\n    } else {\n      const pedido = Number((seleccion || {})[m.id]);\n      cant = Number.isFinite(pedido) ? Math.floor(pedido) : 0;\n      cant = Math.max(0, Math.min(MAX_CANTIDAD, cant));\n      if (m.control === 'toggle') cant = cant > 0 ? 1 : 0;\n    }\n    if (cant === 0) continue;\n\n    const h = m.horas * cant;\n    horas += h;\n    desglose.push({\n      id: m.id,\n      modulo: m.nombre,\n      descripcion: m.descripcion,\n      categoria: m.categoria,\n      cantidad: cant,\n      horas: h,\n      subtotal: h * VALOR_HORA\n    });\n  }\n\n  return { horas: horas, valor_hora: VALOR_HORA, total: horas * VALOR_HORA, desglose: desglose };\n}\n\n/* ══ Precio en vivo para la calculadora de la web ═════════════════ */\nconst body = $('Webhook precio').first().json.body || {};\nconst servicioNombre = SERVICIOS[String(body.servicio || '')];\n\nif (!servicioNombre) {\n  return [{ json: { error: 'servicio desconocido', total: 0, horas: 0, desglose: [] } }];\n}\n\nconst modulos = modulosDe($input.first().json.results, servicioNombre);\nconst r = cotizar(modulos, body.seleccion);\n\nreturn [{ json: { moneda: 'ARS', horas: r.horas, total: r.total, desglose: r.desglose } }];\n"
       },
-      "id": "1cd5ae0f-c553-42a3-91ca-ecd21c7b45bf",
+      "id": "29e1acd0-f152-4602-808f-daba41eb3b86",
       "name": "Calcular precio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -188,7 +188,7 @@
           }
         }
       },
-      "id": "b8c1c0e4-abdb-4c86-b6c3-491cc8add40c",
+      "id": "11165918-d086-4441-909b-8585f728e4c2",
       "name": "Responder precio",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
