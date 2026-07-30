@@ -26,6 +26,13 @@ define('ADMIN_BASE_URL', 'https://chichalabs.studio/admin');
 // --- n8n (opcional) — dejar vacío para desactivar la notificación ---
 define('N8N_PROPOSAL_ACCEPTED_WEBHOOK', '');
 
+// --- Cotizador automático ---
+// Secreto compartido con n8n: el workflow "Cotizador — Propuesta" lo manda en
+// el header X-Cotizador-Key al pegarle a /api/cotizador-pdf.php. Si queda
+// vacío, ese endpoint responde 503 y no genera PDFs (falla cerrado a propósito).
+// Generar uno con: php -r "echo bin2hex(random_bytes(24));"
+define('COTIZADOR_PDF_SECRET', '');
+
 // --- Entorno ---
 // 'local' muestra errores detallados; cualquier otro valor los oculta (producción).
 define('APP_ENV', 'production');

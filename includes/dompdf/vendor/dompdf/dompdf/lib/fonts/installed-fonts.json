@@ -1,0 +1,10 @@
+{
+    "inter": {
+        "normal": "C:\\Users\\desig\\Documents\\chichalabs-web\\website2\\includes\\dompdf\\vendor\\dompdf\\dompdf\/lib\/fonts\/inter_normal_74e0d34815e47568221d0c8a16fdfe09",
+        "600": "C:\\Users\\desig\\Documents\\chichalabs-web\\website2\\includes\\dompdf\\vendor\\dompdf\\dompdf\/lib\/fonts\/inter_600_3bb1c8c4821e677f4923eae76e9a935e",
+        "bold": "inter_bold_0c6f1ae99259509e68c6947ce20918ae"
+    },
+    "jbmono": {
+        "500": "jbmono_500_60ed1321dba4e93f53a1d88ba35d464c"
+    }
+}

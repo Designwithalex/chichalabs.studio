@@ -28,6 +28,8 @@ jobs:
           # Files/dirs that must NEVER be pushed or deleted on the server.
           # config/config.php holds the live DB/SMTP secrets and lives only on
           # the server; excluding it keeps the sync from touching it.
+          # n8n/ y tools/ se versionan en el repo pero no van a public_html:
+          # son las definiciones de los workflows y utilidades de desarrollo.
           exclude: |
             **/.git*
             **/.git*/**
@@ -35,7 +37,12 @@ jobs:
             **/.claude/**
             config/config.php
             .deploy.env
+            .n8n.env
+            .n8n.env.example
             .gitignore
             README.md
+            README-COTIZADOR.md
             *.py
             sql/**
+            n8n/**
+            tools/**

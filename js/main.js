@@ -403,9 +403,6 @@
     }
 
     /* Los iconos ahora están dentro de .service-row */
-    const diagIcon = document.querySelector('.icon--diagnostico');
-    if (diagIcon) onVisible(diagIcon.closest('.service-row') || diagIcon, () => diagIcon.classList.add('is-animated'));
-
     const websIcon = document.querySelector('.icon--webs');
     if (websIcon) onVisible(websIcon.closest('.service-row') || websIcon, () => websIcon.classList.add('is-animated'));
 

@@ -9,7 +9,7 @@
 (function () {
   'use strict';
 
-  var CALENDAR_URL  = 'https://calendar.app.google/n4zQmUWpKw96TnSX8';
+  var CALENDAR_URL  = 'https://calendar.app.google/YrXbTqH8iREgLShf6';
   var WHATSAPP_URL  = 'https://wa.me/5491178221468?text=Hola%2C%20mi%20propuesta%20de%20ChichaLabs%20Studio%20venci%C3%B3%2C%20%C2%BFme%20ayud%C3%A1s%20a%20renovarla%3F';
 
   if (typeof window.MODULES === 'undefined' || typeof window.PROPOSAL_META === 'undefined') return;

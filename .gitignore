@@ -1,3 +1,9 @@
 # Secrets — never commit
 .deploy.env
+.n8n.env
 config/config.php
+
+# Artefactos generados por tools/preview-propuesta.php
+tools/preview.html
+tools/preview.pdf
+tools/.n8n-ids.json
