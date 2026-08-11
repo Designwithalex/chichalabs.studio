@@ -33,6 +33,21 @@ define('N8N_PROPOSAL_ACCEPTED_WEBHOOK', '');
 // Generar uno con: php -r "echo bin2hex(random_bytes(24));"
 define('COTIZADOR_PDF_SECRET', '');
 
+// --- Meta Conversions API (/api/meta-capi.php) ---
+// Espeja del lado del servidor los eventos del pixel, para no perder los que
+// bloquean los adblockers. Si el token queda vacío, el endpoint responde 503
+// y el sitio sigue funcionando sólo con el pixel del browser (falla cerrado).
+//
+// El token se saca en Events Manager → el dataset "chichalab" → Configuración
+// → Conversions API → "Generar token de acceso". Es un token permanente y da
+// permiso de escribir eventos: tratalo como una contraseña.
+define('META_PIXEL_ID',  '1703278184288117');
+define('META_CAPI_TOKEN', '');
+
+// Sólo para probar: pegá acá el código de Events Manager → Test Events y los
+// eventos aparecen ahí sin ensuciar los datos reales. VACIAR en producción.
+define('META_TEST_EVENT_CODE', '');
+
 // --- Entorno ---
 // 'local' muestra errores detallados; cualquier otro valor los oculta (producción).
 define('APP_ENV', 'production');

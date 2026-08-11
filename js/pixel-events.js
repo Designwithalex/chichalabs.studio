@@ -25,6 +25,13 @@
     'privacidad':  'Politica de privacidad'
   };
 
+  /* Arriba de todo a propósito: los scripts van con `defer`, así que cuando
+     este archivo corre `readyState` ya es 'interactive' y `init()` se ejecuta
+     en la línea de abajo — antes de llegar al resto del archivo. Declarada
+     más abajo, `aCapi()` la leería en zona muerta y el ViewContent de cada
+     landing se perdería en silencio (el try/catch se come el ReferenceError). */
+  const CAPI_URL = '/api/meta-capi.php';
+
   const pagina = detectarPagina();
 
   if (document.readyState === 'loading') {
@@ -39,17 +46,72 @@
     initEngagement();
   }
 
-  /* Los bloqueadores de tracking cortan connect.facebook.net y fbq queda
-     sin definir. Nunca romper la página por eso: el sitio funciona igual. */
-  function track(evento, params) {
-    if (typeof window.fbq !== 'function') return;
-    window.fbq('track', evento, params);
+  /* ============================================================
+     ENVÍO DOBLE — browser (fbq) + servidor (Conversions API)
+
+     Los bloqueadores cortan connect.facebook.net y `fbq` queda sin definir:
+     ese evento no le llega a Meta y para la campaña no existió. Por eso el
+     mismo evento sale también por /api/meta-capi.php, que es first-party y
+     los bloqueadores no tocan.
+
+     Las dos copias llevan el MISMO event_id: Meta las une y cuenta una sola.
+     Si no coincidieran, cada lead se contaría dos veces y el CPL que reporta
+     Meta sería la mitad del real. Ver PIXEL-EVENTS.md.
+
+     Nunca romper la página: si algo de esto falla, el sitio sigue igual.
+  ============================================================ */
+  function track(evento, params, userData) {
+    enviar('track', evento, params, userData);
   }
 
-  function trackCustom(evento, params) {
-    if (typeof window.fbq !== 'function') return;
-    window.fbq('trackCustom', evento, params);
+  function trackCustom(evento, params, userData) {
+    enviar('trackCustom', evento, params, userData);
   }
+
+  function enviar(metodo, evento, params, userData) {
+    const id = nuevoEventId();
+    if (typeof window.fbq === 'function') {
+      window.fbq(metodo, evento, params, { eventID: id });
+    }
+    aCapi(evento, params, id, userData);
+  }
+
+  function nuevoEventId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+
+  /* fbp, fbc, IP y user-agent no se mandan desde acá: al ser same-origin el
+     browser manda las cookies solo y PHP ve la IP real. Sólo viaja el email
+     cuando lo tenemos (el cotizador), que no está en ninguna cookie. */
+  function aCapi(evento, params, id, userData) {
+    try {
+      const body = JSON.stringify({
+        event_name: evento,
+        event_id: id,
+        event_source_url: location.href,
+        custom_data: params || {},
+        user_data: userData || {}
+      });
+      /* keepalive porque varios de estos eventos disparan justo antes de
+         navegar a WhatsApp o al calendario: sin esto el browser cancela el
+         request al descargar la página y se pierde el lead. */
+      fetch(CAPI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+        keepalive: true,
+        credentials: 'same-origin'
+      }).catch(function () {});
+    } catch (e) { /* nunca romper la página por tracking */ }
+  }
+
+  /* El cotizador vive en otro archivo (ver cabecera) y necesita el mismo
+     envío doble. Se expone acá en vez de duplicarlo: pixel-events.js está
+     en las 7 páginas públicas, así que siempre llega primero. */
+  window.CL_PIXEL = { track: track, trackCustom: trackCustom };
 
   function detectarPagina() {
     const archivo = (location.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';

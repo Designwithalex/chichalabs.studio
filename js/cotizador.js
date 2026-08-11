@@ -191,7 +191,13 @@
     const state = {
       servicio: null, servicioNombre: '',
       modulos: [], seleccion: Object.create(null),
-      precio: null, reqId: 0, debounceId: null
+      precio: null, reqId: 0, debounceId: null,
+      /* Los dos pasos intermedios del embudo se reportan una sola vez por
+         servicio elegido: el precio se recalcula con cada check y el form se
+         puede abrir y cerrar, y sin esto un solo visitante indeciso mandaría
+         veinte eventos y arruinaría la tasa de abandono. `elegir()` los
+         resetea porque cambiar de servicio arranca un embudo nuevo. */
+      vioPrecio: false, abrioForm: false
     };
 
     if (el.services) {
@@ -201,7 +207,7 @@
     el.modules.addEventListener('change', onModuleChange);
     el.modules.addEventListener('click', onStepperClick);
     el.toggle.addEventListener('click', onToggleBreakdown);
-    el.cta.addEventListener('click', () => showView('form'));
+    el.cta.addEventListener('click', abrirForm);
     el.back.addEventListener('click', () => showView('precio'));
     el.form.addEventListener('submit', onSubmit);
 
@@ -248,6 +254,8 @@
       state.servicioNombre = serv.nombre;
       state.seleccion = Object.create(null);
       state.precio = null;
+      state.vioPrecio = false;
+      state.abrioForm = false;
 
       showView('precio');
       el.layout.hidden = false;
@@ -392,6 +400,20 @@
         el.price.dataset.loading = 'false';
         setPrice(formatARS(data.total), horasLabel(data.horas));
         renderBreakdown(data.desglose || []);
+
+        /* Configuró el alcance y vio un número. Es el salto de intención más
+           grande del embudo y el que faltaba medir: contra QuoteStarted dice
+           cuántos abren el cotizador y se van sin llegar nunca al precio. */
+        if (!state.vioPrecio && Number(data.total) > 0) {
+          state.vioPrecio = true;
+          trackCustom('QuotePriced', {
+            servicio: state.servicio,
+            servicio_nombre: state.servicioNombre,
+            location: origen,
+            value: Number(data.total),
+            currency: data.moneda || 'ARS'
+          });
+        }
       } catch (err) {
         if (req !== state.reqId) return;
         mostrarFallback(err);
@@ -430,6 +452,23 @@
     }
 
     /* ── Contacto → dispara el PDF + email ──────────────────────── */
+
+    /* Vio el precio y pidió el formulario: el último paso antes del Lead.
+       Es el que separa "el precio lo espantó" de "el precio le cerró pero no
+       quiso dejar los datos" — dos problemas con arreglos opuestos. */
+    function abrirForm() {
+      showView('form');
+      if (state.abrioForm) return;
+      state.abrioForm = true;
+      trackCustom('QuoteContactOpened', {
+        servicio: state.servicio,
+        servicio_nombre: state.servicioNombre,
+        location: origen,
+        value: state.precio ? Number(state.precio.total) : undefined,
+        currency: (state.precio && state.precio.moneda) || 'ARS'
+      });
+    }
+
     async function onSubmit(e) {
       e.preventDefault();
       ocultarError();
@@ -467,7 +506,18 @@
           content_ids: [state.servicio],
           location: origen,
           value: state.precio ? Number(state.precio.total) : undefined,
-          currency: 'ARS'
+          /* La moneda la manda n8n en la respuesta de /precio. Estaba fija en
+             'ARS': si el día de mañana el cotizador pasa a dólares, un value
+             hardcodeado le reporta a Meta pesos con montos de dólares y
+             arruina la optimización por valor sin que nada falle a la vista. */
+          currency: (state.precio && state.precio.moneda) || 'ARS'
+        }, {
+          /* Va en claro hasta el endpoint, que lo hashea con SHA-256 antes de
+             mandarlo (Meta nunca recibe el email en limpio). Es el dato que
+             más sube el Event Match Quality y el único evento del sitio donde
+             lo tenemos: sin esto el match depende sólo de cookie + IP. */
+          em: contacto.email,
+          ph: contacto.telefono
         });
       } catch (err) {
         mostrarError('No pudimos enviar la propuesta. Probá de nuevo en un momento, o escribinos por WhatsApp.');
@@ -637,11 +687,18 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function track(evento, params) {
+  /* Delegan en pixel-events.js, que manda cada evento por las dos vías
+     (browser + Conversions API) con un event_id compartido para que Meta no
+     lo cuente dos veces. El fallback a fbq directo cubre el caso de una
+     página que cargue el cotizador sin pixel-events.js: pierde el respaldo
+     server-side, pero no pierde el evento. Ver PIXEL-EVENTS.md. */
+  function track(evento, params, userData) {
+    if (window.CL_PIXEL) { window.CL_PIXEL.track(evento, params, userData); return; }
     if (typeof window.fbq === 'function') window.fbq('track', evento, params);
   }
 
-  function trackCustom(evento, params) {
+  function trackCustom(evento, params, userData) {
+    if (window.CL_PIXEL) { window.CL_PIXEL.trackCustom(evento, params, userData); return; }
     if (typeof window.fbq === 'function') window.fbq('trackCustom', evento, params);
   }
 

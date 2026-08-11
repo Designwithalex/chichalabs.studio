@@ -8,7 +8,8 @@ alguien se pregunta "¿y esto qué era?", la respuesta está acá.
   quedaron en su propia cuenta y no se migran)
 - **Snippet base:** inline en el `<head>` de las 7 páginas públicas (dispara `PageView`).
 - **Eventos:** `js/pixel-events.js`, cargado en las 7 páginas.
-- **Server-side (Conversions API):** no está implementado. Todo es client-side.
+- **Server-side (Conversions API):** `api/meta-capi.php`. Cada evento sale por
+  las dos vías con el mismo `event_id`. Ver "Envío doble" abajo.
 
 ## Por qué un archivo aparte de `main.js`
 
@@ -26,6 +27,9 @@ dinámicamente y no depende de qué otro JS cargue cada página.
 | `Lead` | standard | Click en cualquier link `wa.me` **y** envío del formulario del cotizador | **La conversión.** Es el evento de optimización de la campaña. |
 | `Schedule` | standard | Click en cualquier link `calendar.app.google` | El otro camino de cierre: reunión agendada en vez de WhatsApp. |
 | `LandingEngaged` | custom | Sección del caso visible en una landing, una sola vez | **Diagnóstico**, no público. Ver abajo. |
+| `QuoteStarted` | custom | Eligió un servicio en el cotizador | Arranque del embudo del cotizador. |
+| `QuotePriced` | custom | Vio un precio por primera vez (una vez por servicio elegido) | **Diagnóstico.** Contra `QuoteStarted`: cuántos abren el cotizador y se van sin llegar al número. |
+| `QuoteContactOpened` | custom | Pidió el formulario de contacto (una vez por servicio elegido) | **Diagnóstico.** Contra `QuotePriced`: si el precio espanta. Contra `Lead`: si la fricción es el formulario. |
 
 ### Parámetros
 
@@ -120,21 +124,84 @@ Qué cambia en la práctica:
 - `value` permite optimizar por valor, no sólo por cantidad de leads. Con el
   volumen actual todavía no alcanza, pero el dato ya se está juntando.
 
-**Ojo si el CPL se dispara:** antes de tocar los ads, mirá si el problema es
-que la gente abre el cotizador y lo abandona. El evento custom `QuoteStarted`
-(al elegir servicio) contra `Lead` te da esa tasa de abandono.
+**Ojo si el CPL se dispara:** antes de tocar los ads, mirá dónde se cae la
+gente dentro del cotizador. El embudo completo son cuatro pasos y cada caída
+tiene un arreglo distinto:
+
+```
+QuoteStarted  →  QuotePriced  →  QuoteContactOpened  →  Lead
+   abrió          vio el precio     pidió el form        dejó los datos
+```
+
+- Se caen entre **`QuoteStarted` y `QuotePriced`**: no entienden qué marcar.
+  Es un problema de las preguntas de los módulos, no del precio.
+- Se caen entre **`QuotePriced` y `QuoteContactOpened`**: el número los
+  espantó. Ahí el problema es de oferta o de a quién le estás pautando.
+- Se caen entre **`QuoteContactOpened` y `Lead`**: el precio les cerró pero no
+  quieren dejar los datos. Es fricción del formulario.
+
+Los dos del medio se reportan **una sola vez por servicio elegido** (`elegir()`
+los resetea): el precio se recalcula con cada check y el formulario se puede
+abrir y cerrar, y sin ese tope un solo visitante indeciso mandaría veinte
+eventos y arruinaría la tasa.
 
 **No usamos `Contact`.** Es redundante con `Lead` para la misma acción y
 partiría el signal.
+
+## Envío doble — browser + Conversions API
+
+Cada evento sale por dos caminos a la vez:
+
+1. **Browser** — `fbq(...)`, como siempre.
+2. **Servidor** — `POST /api/meta-capi.php`, que lo reenvía a Meta.
+
+**Por qué.** Los bloqueadores cortan `connect.facebook.net` y `fbq` queda sin
+definir: ese evento no le llega a Meta y para la campaña no existió. El
+endpoint es *first-party* (mismo dominio), así que los bloqueadores no lo
+tocan y el evento llega igual. Con ~15 leads al mes, perder 20-30% es la
+diferencia entre que la campaña aprenda o no.
+
+**Deduplicación.** Las dos copias llevan el **mismo `event_id`** (un UUID que
+genera `pixel-events.js` y pasa a `fbq` como `eventID`). Meta las une y cuenta
+una sola. Si no coincidieran, cada lead se contaría dos veces y el CPL que
+reporta Meta sería la mitad del real.
+
+**Qué NO hay que mandar desde el JS.** El `fetch` es same-origin, así que el
+browser manda solo las cookies `_fbp` y `_fbc`, y PHP ve la IP y el user-agent
+reales del visitante. Eso es justo lo que levanta el Event Match Quality y
+sale gratis. Lo único que agrega el JS es el **email y el teléfono** del
+cotizador, que no viajan en ninguna cookie: van en claro hasta el endpoint,
+que los hashea con SHA-256 antes de mandarlos (Meta nunca los recibe en
+limpio).
+
+**Configuración.** `META_PIXEL_ID` y `META_CAPI_TOKEN` en `config/config.php`
+(ver `config.php.example`). **Si el token está vacío el endpoint responde 503
+y no manda nada** — falla cerrado, y el sitio sigue andando con el pixel del
+browser solo. O sea: hasta que no cargues el token en el servidor, esto no
+está haciendo nada.
+
+**El endpoint es público**, no hay forma de que no lo sea. Lo que lo protege
+es la allowlist de nombres de evento en `CAPI_EVENTOS` y un chequeo de
+`Origin`. Si agregás un evento nuevo al sitio, **sumalo a esa constante** o el
+espejo server-side lo va a descartar con un 422 (el del browser sí va a andar,
+así que se nota poco: mirá el log de PHP).
 
 ## Verificar que funciona
 
 1. **Meta Pixel Helper** (extensión de Chrome) o Events Manager → Test Events.
 2. Los bloqueadores de ads cortan `connect.facebook.net` y `fbq` queda sin
    definir. `pixel-events.js` chequea eso antes de cada llamada, así que el
-   sitio no se rompe — pero **no vas a ver ningún evento hasta que pruebes sin
-   bloqueador**. Si "no anda", descartá esto primero.
-3. El JS se cachea fuerte. Al testear cambios, hard reload (Ctrl+Shift+R).
+   sitio no se rompe, y **Pixel Helper no te va a mostrar nada**. Desde que
+   existe el envío doble eso ya no significa que el evento se perdió: fijate
+   en Events Manager, donde debería aparecer igual con origen *server*. Si no
+   aparece por ninguna de las dos vías, ahí sí hay un problema.
+3. Para probar el lado server: la pestaña Network del navegador tiene que
+   mostrar el `POST` a `/api/meta-capi.php` con respuesta `200 {"ok":true}`.
+   Un **503** es que falta `META_CAPI_TOKEN` en `config/config.php`; un
+   **422**, que el evento no está en `CAPI_EVENTOS`.
+4. El JS se cachea fuerte. Al testear cambios, hard reload (Ctrl+Shift+R), y
+   acordate de subirle el `?v=` a `pixel-events.js` y `cotizador.js` en el
+   HTML cuando lo despliegues.
 
 ## Si agregás un CTA nuevo
 
