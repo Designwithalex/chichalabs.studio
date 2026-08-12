@@ -8,7 +8,7 @@ propuesta en PDF por email con el link de Calendar.
 
 ---
 
-## 1. Las cuatro piezas
+## 1. Las cinco piezas
 
 | Pieza | Dónde vive | Qué hace |
 |---|---|---|
@@ -16,6 +16,7 @@ propuesta en PDF por email con el link de Calendar.
 | API liviana | n8n — `Cotizador — API liviana` | Sirve el formulario y calcula el precio en vivo |
 | Propuesta | n8n — `Cotizador — Propuesta (PDF + email)` | Calcula, genera el PDF y manda el email |
 | Web | este repo | La sección `#cotizador` de la home y el modal de las landings |
+| Admin | este repo | El importador del editor de propuestas (ver sección 5) |
 
 ### Dos formas de mostrarlo, un solo template
 
@@ -122,7 +123,7 @@ Dos ramas independientes, una por endpoint.
 | `Preparar envío` | **Punto único de salida.** Deja listos los datos + el PDF |
 | `Email al cliente` | Manda el PDF adjunto, el link de Calendar y el de descarga |
 | `Aviso interno` | Copia a notificaciones@chichalabs.studio |
-| `FASE 2 · acá va WhatsApp` | Placeholder. Ver sección 8 |
+| `FASE 2 · acá va WhatsApp` | Placeholder. Ver sección 9 |
 | `Confirmar al formulario` | Responde `{ok:true, numero}` a la web |
 
 ### Cómo se decide el tipo de control de cada módulo
@@ -193,17 +194,86 @@ propósito, para poder importar uno sin el otro).
    ```js
    'mi-servicio-nuevo': 'Nombre exacto en Notion',
    ```
-3. **Web:** en `index.html`, dentro de `.quoter__services`, duplicá un
-   `<button class="qservice">` y poné `data-servicio="mi-servicio-nuevo"`.
-4. Si tiene landing propia, linkeala a
-   `index.html?servicio=mi-servicio-nuevo#cotizador` para que caiga preelegido.
+3. **Web:** sumá la entrada al array `SERVICIOS` de `js/cotizador.js`, con su
+   ícono. **El markup de los botones lo genera ese archivo**: en `index.html`
+   no hay nada que tocar. Si quedan más de 5 servicios, revisá los breakpoints
+   de `.quoter__services` en `css/cotizador.css` para que la última fila no
+   quede con una tarjeta suelta.
+4. **Admin:** sumá el `{ id, nombre }` al array `SERVICIOS` de
+   `admin/js/cotizador-admin.js`, para que aparezca en el importador.
+5. Si tiene landing propia, los botones `data-cotizador="mi-servicio-nuevo"`
+   abren el modal ya filtrado. El link viejo
+   `index.html?servicio=mi-servicio-nuevo#cotizador` también sigue andando.
 
-El `data-servicio` de la web y la clave del mapa `SERVICIOS` **tienen que ser
-idénticos**, y el valor del mapa tiene que ser idéntico al de Notion.
+El id **tiene que ser idéntico en los tres archivos** (n8n, `js/cotizador.js`
+y `admin/js/cotizador-admin.js`), y el valor del mapa de n8n tiene que ser
+idéntico al de Notion.
 
 ---
 
-## 5. Puesta en marcha en n8n
+## 5. El cotizador dentro del admin
+
+El editor de propuestas (`/admin/propuesta-editor.php`) tiene un panel
+**“Armar desde el cotizador”**: elegís un servicio, respondés las mismas
+preguntas que ve un visitante en la web y los módulos entran en la propuesta
+de ese cliente, en vez de cargarlos a mano uno por uno.
+
+### Qué comparte con el cotizador público y qué no
+
+**Comparte** el contrato con n8n (`GET /modulos` para las preguntas,
+`POST /precio` para el desglose) y las clases de `css/cotizador.css` para
+dibujarlas. El catálogo sigue siendo Notion: un módulo nuevo aparece en los
+dos lados sin tocar código.
+
+**No comparte** ni la UI ni el precio, y son dos archivos distintos a
+propósito:
+
+| | Cotizador público | Importador del admin |
+|---|---|---|
+| Termina en | Formulario de contacto → PDF por email | `proposal_modules` de una propuesta |
+| Valor hora | `VALOR_HORA` de n8n, siempre en pesos | El de la propuesta, en su moneda |
+| Horas | Las decide Notion | Las decide Notion, **editables a mano** |
+| Eventos de Pixel | Sí | No — es una herramienta interna |
+
+### Por qué importa las horas y no el precio
+
+De la respuesta de `/precio` se usa **`horas` de cada módulo, nunca
+`subtotal`**. El cotizador público cotiza a $45.000/h en pesos; una propuesta
+puede estar en dólares y a otro valor hora. Con las horas cargadas, el precio
+lo resuelve la propuesta con la fórmula que ya usaba (`valor hora × horas`), y
+cambiar el valor hora recalcula todos los módulos de una.
+
+Si la propuesta todavía no tiene valor hora, la importación igual funciona:
+los módulos entran con precio 0 y toman precio en cuanto lo cargues y guardes.
+
+### Las horas son editables — a propósito
+
+En la tabla de preview cada fila trae las horas del catálogo en un campo
+editable, y se puede destildar una fila para que no entre. Lo que se guarda es
+**lo que quedó en el formulario**, no lo que devolvió n8n.
+
+Es la excepción deliberada a la regla de “el servidor no confía en el
+navegador” de la sección 1: esa regla existe porque del lado público la
+selección la arma un visitante anónimo. Acá la arma un admin logueado, que
+tiene todo el derecho de corregir la estimación para un cliente puntual.
+
+### Detalles que conviene saber
+
+- **Suma, no reemplaza.** Los módulos se agregan al final, con la numeración
+  siguiendo desde el último. Para volver a empezar está el tilde *“Reemplazar
+  los N módulos que ya tiene la propuesta”*.
+- **Todo entra como costo único.** El cotizador no distingue mensual de único;
+  si un módulo es mensual, se cambia después desde la tabla de módulos.
+- **Las cantidades van en el nombre.** Tres páginas adicionales entran como una
+  sola fila, `Página adicional ×3`, con las horas ya multiplicadas.
+- **Una propuesta aceptada no se toca.** El panel ni siquiera se muestra, y el
+  POST está bloqueado igual que el resto de las mutaciones.
+- **Si n8n no responde**, el panel avisa y te quedan el formulario de “Nuevo
+  módulo” de siempre para cargar a mano.
+
+---
+
+## 6. Puesta en marcha en n8n
 
 ### 5.1 Credenciales (crear antes de importar)
 
@@ -256,13 +326,15 @@ curl -X POST https://TU-N8N/webhook/cotizador/precio \
 
 ---
 
-## 6. Archivos del repo
+## 7. Archivos del repo
 
 | Archivo | Para qué |
 |---|---|
 | `index.html` → `<section id="cotizador">` | Marcado de la sección |
 | `css/cotizador.css` | Estilos (sólo tokens de `css/tokens.css`) |
-| `js/cotizador.js` | Pide módulos, precio y envía la propuesta. **No calcula nada** |
+| `js/cotizador.js` | Pide módulos, precio y envía la propuesta. **No calcula nada**. También el array `SERVICIOS` con los íconos |
+| `admin/js/cotizador-admin.js` | El importador del admin (sección 5). Mismo contrato con n8n, otra UI |
+| `admin/propuesta-editor.php` → `import_cotizacion` | Crea los `proposal_modules` con lo que quedó en el preview |
 | `api/cotizador-pdf.php` | Endpoint que devuelve el PDF. Autenticado por header |
 | `includes/propuesta-pdf.php` | Template HTML + render del PDF |
 | `includes/dompdf/` | Dompdf vendorizado (sin Composer) |
@@ -284,7 +356,7 @@ Los colores están todos juntos arriba de la función.
 
 ---
 
-## 7. Decisiones que conviene conocer
+## 8. Decisiones que conviene conocer
 
 **El PDF es claro, no oscuro.** La marca es Dark Premium, pero Dompdf pinta
 siempre de blanco el área del margen de página: un PDF full-dark queda con un
@@ -332,7 +404,7 @@ automatically with n8n".
 
 ---
 
-## 8. Fase 2 — sumar WhatsApp
+## 9. Fase 2 — sumar WhatsApp
 
 Cuando Meta apruebe la verificación del negocio:
 
