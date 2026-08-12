@@ -1,0 +1,52 @@
+Dark editorial tech visual, rendered at high-fidelity 3D product-visualization
+quality. Square 1:1 composition, 1080x1080 minimum, sharp to the edges.
+
+SUBJECT — a spreadsheet becoming an instrument. One continuous left-to-right
+transformation across the frame.
+
+LEFT THIRD: a dense, oppressive spreadsheet grid. Hundreds of tiny grey cells,
+slightly warped and sagging under their own weight, some cells cracked, the outer
+edges fraying into loose fragments. Colourless, claustrophobic, illegible. It
+should read as a burden.
+
+MIDDLE: the fragments lift off the grid and reorganise in mid-air, caught in
+motion — cell shards rotating, aligning, catching mint-green rim light as they
+turn. This is the hinge of the image.
+
+RIGHT TWO-THIRDS: the shards land as a calm, spacious dark glass dashboard panel.
+Only three or four large clean modules: one crisp mint bar series, one thin
+ascending line, one oversized monospace number with a small mint delta triangle
+beside it. Enormous breathing room between the modules. Deliberately
+under-populated — the visual opposite of the chaos on the left.
+
+The eye should travel left to right and feel physical relief. No people, no
+hands, no cursors.
+
+PALETTE — strict. Near-black canvas #0A0A0B. Layered surfaces #111214 and
+#16181C. One single accent: mint green #2CE58B, appearing only on the rim light
+of the flying shards, the bar series, the ascending line and the delta.
+Secondary green #1FA968 for depth only. The big number and UI chrome #F5F6F7.
+The dead spreadsheet and all muted labels #A1A1AA.
+
+TREATMENT — the dashboard panel uses glassmorphism: 4% white fill, 1px borders at
+10% white, heavy background blur, 16px corner radius. Soft mint bloom behind
+accent elements, roughly #2CE58B at 35% opacity with 30px spread — a glow, never
+a hard neon outline. Volumetric haze in the deep background. Very subtle film
+grain. A faint 1px grid in white at 4% opacity receding into the dark.
+
+LIGHTING — one cool key light from upper left, mint rim light from lower right,
+deep unlit shadows. Cinematic, low-key, high contrast.
+
+COMPOSITION — the transformation runs horizontally across the full width.
+Generous negative space on the right. Asymmetric and editorial.
+
+TYPOGRAPHY — the only readable element is the large number, rendered in a clean
+geometric monospace as plain placeholder digits with no currency symbol and no
+words. Every other label is an abstract bar. Crisp and correctly kerned.
+
+MOOD — from nobody understands it to anybody can read it.
+
+AVOID — stock-photo people, handshakes, office scenes, blue corporate palettes,
+purple-cyan AI gradients, glowing brains, circuit boards, robots, cluttered
+dashboards with dozens of widgets, lens flares, bevelled 3D, rainbow gradients,
+watermarks, real company logos, any second accent hue.
