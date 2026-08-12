@@ -666,6 +666,11 @@ body.nav-open { overflow: hidden; }
 .icon--webs .icon__draw--2 { stroke-dasharray: 24; stroke-dashoffset: 24; transition-delay: 0.18s; }
 .icon--webs .icon__draw--3 { stroke-dasharray: 14; stroke-dashoffset: 14; transition-delay: 0.36s; }
 .icon--webs.is-animated .icon__draw { stroke-dashoffset: 0 !important; }
+/* apps — se dibuja la flecha de instalar dentro del teléfono */
+.icon--apps .icon__draw { transition: stroke-dashoffset 0.5s var(--ease-out-quint); }
+.icon--apps .icon__draw--1 { stroke-dasharray: 16; stroke-dashoffset: 16; transition-delay: 0.1s; }
+.icon--apps .icon__draw--2 { stroke-dasharray: 18; stroke-dashoffset: 18; transition-delay: 0.28s; }
+.icon--apps.is-animated .icon__draw { stroke-dashoffset: 0 !important; }
 .icon--dashboards .icon__bar { transform: scaleY(0); transform-box: fill-box; transform-origin: bottom center; transition: transform 0.5s var(--ease-out-quint); }
 .icon--dashboards.is-animated .icon__bar--1 { transform: scaleY(1); transition-delay: 0s; }
 .icon--dashboards.is-animated .icon__bar--2 { transform: scaleY(1); transition-delay: 0.1s; }
@@ -848,6 +853,39 @@ body.nav-open { overflow: hidden; }
 .mockup__web-btn { margin-top: 0.5rem; width: 80px; height: 18px; background: var(--green-wash); border: 1px solid var(--green-line); border-radius: var(--radius-xs); }
 .mockup__web-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .mockup__web-card { height: 36px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-xs); }
+
+/* app instalable — el teléfono va centrado sobre el mismo lienzo 16/10 que
+   el resto de los mockups, para que las landings mantengan la misma altura */
+.mockup--app { display: grid; place-items: center; background: var(--bg); padding: 0.9rem; }
+.mockup__phone {
+  height: 100%; aspect-ratio: 1 / 2;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  padding: 0.45rem 0.4rem;
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.mockup__phone-notch { width: 34%; height: 5px; margin: 0 auto; border-radius: 0 0 4px 4px; background: rgba(255,255,255,0.14); }
+.mockup__app-head { display: flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.15rem 0; }
+.mockup__app-logo { width: 14px; height: 14px; border-radius: 4px; background: var(--green); flex-shrink: 0; }
+.mockup__app-title { flex: 1; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.16); }
+.mockup__app-body { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.mockup__app-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-xs); height: 24px; flex-shrink: 0; }
+.mockup__app-card--tall { flex: 1; height: auto; }
+/* el chip de instalar es lo que la distingue de una web común */
+.mockup__app-install {
+  display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+  padding: 0.3rem;
+  background: var(--green-wash); border: 1px solid var(--green-line);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono); font-size: 0.45rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--green);
+}
+.mockup__app-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3rem; padding-top: 0.35rem; border-top: 1px solid var(--line); }
+.mockup__app-tab { height: 5px; border-radius: 2px; background: rgba(255,255,255,0.09); }
+.mockup__app-tab.is-active { background: var(--green); }
 
 /* ============================================================
    METRICS STRIP

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps para celular sin App Store ni Google Play — ChichaLabs Studio</title>
+  <meta name="description" content="¿Necesitás una app pero te frena el costo y la vuelta de las tiendas? Desarrollamos apps instalables (progressive web apps): se instalan desde un link, andan en Android y iPhone con una sola app, funcionan sin señal y se actualizan solas. Precio al instante en el cotizador.">
+  <link rel="canonical" href="https://chichalabs.studio/servicios/apps.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Apps para celular sin App Store ni Google Play — ChichaLabs Studio">
+  <meta property="og:description" content="Apps instalables desde un link: una sola app para Android y iPhone, funciona sin señal y se actualiza sola. Sin comisiones ni aprobación de tiendas.">
+  <meta property="og:url" content="https://chichalabs.studio/servicios/apps.html">
+  <meta property="og:locale" content="es_AR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0A0A0B">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css?v=20260812">
+  <link rel="stylesheet" href="../css/styles.css?v=20260812">
+  <link rel="stylesheet" href="../css/landing.css?v=20260812">
+  <link rel="stylesheet" href="../css/cotizador.css?v=20260812">
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1703278184288117');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1703278184288117&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+</head>
+<body>
+
+  <!-- NAV — mismo navbar del sitio (links a las secciones de la home) -->
+  <nav class="nav" id="nav" role="navigation" aria-label="Navegación principal">
+    <a href="../index.html" class="nav__monogram" aria-label="ChichaLabs Studio — Inicio">[ CL ]</a>
+    <div class="nav__links">
+      <div class="nav__dropdown" data-nav-dropdown>
+        <button type="button" class="nav__dropdown-toggle" id="nav-servicios-toggle" aria-expanded="false" aria-controls="nav-servicios-menu">
+          Servicios
+          <svg class="nav__chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav__menu" id="nav-servicios-menu" aria-labelledby="nav-servicios-toggle">
+          <a class="nav__menu-item" href="aplicaciones-web.html">
+            <span class="nav__menu-name">Aplicaciones y sitios web</span>
+            <span class="nav__menu-desc">Plataformas, productos web y sitios de alto rendimiento</span>
+          </a>
+          <a class="nav__menu-item" href="apps.html">
+            <span class="nav__menu-name">Apps para celular</span>
+            <span class="nav__menu-desc">Se instalan desde un link, sin App Store ni Google Play</span>
+          </a>
+          <a class="nav__menu-item" href="automatizaciones.html">
+            <span class="nav__menu-name">Automatizaciones e integraciones</span>
+            <span class="nav__menu-desc">Que la información llegue sola al lugar correcto</span>
+          </a>
+          <a class="nav__menu-item" href="dashboards.html">
+            <span class="nav__menu-name">Dashboards y herramientas internas</span>
+            <span class="nav__menu-desc">Paneles, CRMs y sistemas a medida para operar con datos</span>
+          </a>
+          <a class="nav__menu-item" href="ia-procesos.html">
+            <span class="nav__menu-name">IA aplicada a procesos</span>
+            <span class="nav__menu-desc">Automatizar el trabajo repetitivo que consume horas</span>
+          </a>
+          <a class="nav__menu-all" href="../index.html#servicios">Ver todos los servicios →</a>
+        </div>
+      </div>
+      <a href="../index.html#trabajos">Trabajos</a>
+      <a href="../index.html#casos">Casos</a>
+      <a href="../index.html#contacto">Contacto</a>
+    </div>
+    <a data-location="nav" href="https://calendar.app.google/YrXbTqH8iREgLShf6" class="btn btn--ghost nav__cta" target="_blank" rel="noopener noreferrer">Agendá una reunión</a>
+    <button type="button" class="nav__toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-mobile" aria-label="Abrir menú">
+      <span class="nav__toggle-bar" aria-hidden="true"></span>
+      <span class="nav__toggle-bar" aria-hidden="true"></span>
+      <span class="nav__toggle-bar" aria-hidden="true"></span>
+    </button>
+  </nav>
+
+  <!-- NAV MOBILE — panel desplegable -->
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true" inert>
+    <div class="nav-mobile__links">
+      <a href="../index.html#servicios">Servicios</a>
+      <div class="nav-mobile__sub">
+        <a href="aplicaciones-web.html">Aplicaciones y sitios web</a>
+        <a href="apps.html">Apps para celular</a>
+        <a href="automatizaciones.html">Automatizaciones e integraciones</a>
+        <a href="dashboards.html">Dashboards y herramientas internas</a>
+        <a href="ia-procesos.html">IA aplicada a procesos</a>
+      </div>
+      <a href="../index.html#trabajos">Trabajos</a>
+      <a href="../index.html#casos">Casos</a>
+      <a href="../index.html#contacto">Contacto</a>
+    </div>
+    <div class="nav-mobile__ctas">
+      <a data-location="nav_mobile" href="https://calendar.app.google/YrXbTqH8iREgLShf6" class="btn btn--ghost" target="_blank" rel="noopener noreferrer">Agendá una reunión</a>
+      <button type="button" class="btn btn--text" data-cotizador="apps" data-location="nav_mobile">Quiero saber el precio →</button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       HERO — Hook del dolor
+  ====================================================== -->
+  <section class="lp-hero" aria-label="Hero">
+    <canvas class="lp-hero__canvas hero__canvas" aria-hidden="true"></canvas>
+    <div class="container lp-hero__grid">
+
+      <div class="lp-hero__col">
+        <p class="hero__eyebrow">[ Apps que se instalan sin pasar por las tiendas ]</p>
+        <h1 class="lp-hero__hook">¿Querés una app pero te frena lo que sale y lo que tarda?</h1>
+        <p class="lp-hero__solution">
+          Desarrollamos tu app para que <strong>se instale desde un link</strong>, sin App Store ni Google Play. Una sola app anda en Android y en iPhone, sigue funcionando cuando se corta la señal y se actualiza sola. Si más adelante la querés en las tiendas, la misma app va.
+        </p>
+        <div class="lp-hero__ctas">
+          <button type="button" class="btn btn--ghost btn--lg" data-cotizador="apps" data-location="hero_cotizador">Quiero saber el precio</button>
+        </div>
+        <p class="lp-trust">
+          <span>Precio al instante</span>
+          <span>Sin reuniones previas</span>
+          <span>Propuesta en PDF por email</span>
+        </p>
+      </div>
+
+      <div class="lp-hero__visual">
+        <!-- Mockup: app instalable en el celular -->
+        <div class="mockup mockup--app" aria-hidden="true">
+          <div class="mockup__phone">
+            <div class="mockup__phone-notch"></div>
+            <div class="mockup__app-head">
+              <div class="mockup__app-logo"></div>
+              <div class="mockup__app-title"></div>
+            </div>
+            <div class="mockup__app-body">
+              <div class="mockup__app-card"></div>
+              <div class="mockup__app-card mockup__app-card--tall"></div>
+              <div class="mockup__app-card"></div>
+            </div>
+            <div class="mockup__app-install">Instalar en el celular</div>
+            <div class="mockup__app-tabs">
+              <div class="mockup__app-tab is-active"></div>
+              <div class="mockup__app-tab"></div>
+              <div class="mockup__app-tab"></div>
+              <div class="mockup__app-tab"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <section class="logo-strip logo-strip--hero" aria-label="Marcas con las que trabajamos">
+      <div class="container logo-strip__head">
+        <p class="logo-strip__label">Marcas y negocios que confiaron en nosotros</p>
+      </div>
+      <div class="logo-strip__viewport">
+        <ul class="logo-strip__track">
+          <li class="logo-chip" style="--logo-h: 56px">
+            <img src="../assets/logos/bayer.png" alt="Bayer" width="148" height="148" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 56px">
+            <img src="../assets/logos/mercado-libre.png" alt="Mercado Libre" width="210" height="178" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 26px">
+            <img src="../assets/logos/iqvia.png" alt="IQVIA" width="575" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 34px">
+            <img src="../assets/logos/climate-fieldview.png" alt="Climate FieldView" width="353" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 50px">
+            <img src="../assets/logos/cabrales.png" alt="Cabrales" width="251" height="156" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 31px">
+            <img src="../assets/logos/chemikal-ink.png" alt="Chemikal" width="427" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 22px">
+            <img src="../assets/logos/pacto.png" alt="PACTO" width="563" height="66" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 28px">
+            <img src="../assets/logos/patagonia-berries-ink.png" alt="Patagonia Berries" width="516" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 39px">
+            <img src="../assets/logos/ernesto-automotores.png" alt="Ernesto Automotores" width="258" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 45px">
+            <img src="../assets/logos/cafe-la-humedad.png" alt="Café la Humedad" width="196" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 56px">
+            <img src="../assets/logos/familia-cabrales-ink.png" alt="Familia Cabrales" width="130" height="132" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 34px">
+            <img src="../assets/logos/coderhouse-ink.png" alt="Coderhouse" width="344" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 56px" aria-hidden="true">
+            <img src="../assets/logos/bayer.png" alt="" width="148" height="148" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 56px" aria-hidden="true">
+            <img src="../assets/logos/mercado-libre.png" alt="" width="210" height="178" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 26px" aria-hidden="true">
+            <img src="../assets/logos/iqvia.png" alt="" width="575" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 34px" aria-hidden="true">
+            <img src="../assets/logos/climate-fieldview.png" alt="" width="353" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 50px" aria-hidden="true">
+            <img src="../assets/logos/cabrales.png" alt="" width="251" height="156" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 31px" aria-hidden="true">
+            <img src="../assets/logos/chemikal-ink.png" alt="" width="427" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 22px" aria-hidden="true">
+            <img src="../assets/logos/pacto.png" alt="" width="563" height="66" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 28px" aria-hidden="true">
+            <img src="../assets/logos/patagonia-berries-ink.png" alt="" width="516" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 39px" aria-hidden="true">
+            <img src="../assets/logos/ernesto-automotores.png" alt="" width="258" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 45px" aria-hidden="true">
+            <img src="../assets/logos/cafe-la-humedad.png" alt="" width="196" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 56px" aria-hidden="true">
+            <img src="../assets/logos/familia-cabrales-ink.png" alt="" width="130" height="132" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+          <li class="logo-chip" style="--logo-h: 34px" aria-hidden="true">
+            <img src="../assets/logos/coderhouse-ink.png" alt="" width="344" height="100" loading="eager" fetchpriority="low" decoding="async">
+          </li>
+        </ul>
+      </div>
+    </section>
+  </section>
+
+
+  <!-- =====================================================
+       CÓMO ES
+
+       Las otras landings abren con un caso real y sus números.
+       Acá va la comparación contra la app de tienda, que es la
+       pregunta que hace todo el mundo. Cuando haya un caso de
+       apps con métricas reales, reemplazar este bloque por el
+       molde .lp-ba + .metrics de aplicaciones-web.html.
+  ====================================================== -->
+  <section class="section section--tinted" aria-label="Cómo es">
+    <div class="container">
+      <div class="section-label"><span class="section-label__text">Cómo es</span></div>
+
+      <div class="split-header">
+        <h2 class="split-header__title">La misma app, sin la vuelta de las tiendas</h2>
+        <p class="split-header__sub">Se llaman <em>progressive web apps</em>: apps que se instalan desde el navegador y quedan con su ícono en la pantalla del celular, como cualquier otra. Para el que la usa no hay diferencia; para vos cambia todo lo de alrededor.</p>
+      </div>
+
+      <div class="lp-ba">
+        <div class="lp-ba__col lp-ba__col--before">
+          <span class="lp-ba__tag">App de tienda</span>
+          <p>Hay que <strong>hacerla dos veces</strong>, una para Android y otra para iPhone. Cada cambio espera la aprobación de la tienda. Pagás cuenta de desarrollador todos los años y comisión sobre lo que cobres adentro. Y el cliente tiene que ir a buscarla y bajarla.</p>
+        </div>
+        <div class="lp-ba__arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="lp-ba__col lp-ba__col--after">
+          <span class="lp-ba__tag">App instalable</span>
+          <p>Una sola app para los dos teléfonos. <strong>Se instala desde un link</strong> que mandás por WhatsApp. Los cambios salen el día que los hacés, sin esperar a nadie. Sin comisiones ni cuota anual de tiendas.</p>
+        </div>
+      </div>
+
+      <div class="metrics lp-metrics-3">
+        <div class="metric">
+          <span class="metric__num">1</span>
+          <span class="metric__label">Una sola app para Android y iPhone</span>
+        </div>
+        <div class="metric">
+          <span class="metric__num">0</span>
+          <span class="metric__label">Comisiones y cuotas anuales de App Store y Google Play</span>
+        </div>
+        <div class="metric">
+          <span class="metric__num">100%</span>
+          <span class="metric__label">Tuya: publicás cuando querés, sin que te apruebe una tienda</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       QUÉ INCLUYE
+  ====================================================== -->
+  <section class="section" aria-label="Qué incluye">
+    <div class="container">
+      <div class="section-label"><span class="section-label__text">Qué incluye</span></div>
+      <div class="split-header">
+        <h2 class="split-header__title">Qué te llevás</h2>
+        <p class="split-header__sub">Diseño y desarrollo en un mismo equipo. La dejamos publicada, con el link listo para que se la mandes a tus clientes o a tu equipo.</p>
+      </div>
+
+      <div class="lp-includes">
+        <div class="lp-include">
+          <span class="lp-include__check"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5 6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h3>Se instala desde un link</h3>
+            <p>Queda con su ícono en la pantalla del celular y abre a pantalla completa, sin la barra del navegador. Ni App Store ni Google Play de por medio.</p>
+          </div>
+        </div>
+        <div class="lp-include">
+          <span class="lp-include__check"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5 6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h3>Funciona sin señal</h3>
+            <p>Se puede seguir trabajando en un depósito, un campo o un subte. Cuando vuelve la conexión, lo que se cargó se sincroniza solo.</p>
+          </div>
+        </div>
+        <div class="lp-include">
+          <span class="lp-include__check"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5 6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h3>Avisos al celular</h3>
+            <p>Ese mensaje que aparece en la pantalla aunque la app esté cerrada, para avisarle a tu cliente o a tu equipo lo que no puede esperar.</p>
+          </div>
+        </div>
+        <div class="lp-include">
+          <span class="lp-include__check"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 4.5 6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h3>Se actualiza sola</h3>
+            <p>Cuando la mejoramos, todos la abren ya actualizada. Nadie se queda con una versión vieja ni tiene que ir a bajar nada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       PRECIO ANCLA
+  ====================================================== -->
+  <section class="section section--accent" aria-label="Inversión">
+    <div class="container">
+      <div class="section-label"><span class="section-label__text">Inversión</span></div>
+      <div class="lp-price">
+        <div class="lp-price__head">
+          <h2>¿Cuánto te está costando no tener a tus clientes a un toque de distancia?</h2>
+          <p>Una app instalable cuesta una fracción de lo que sale hacer dos apps nativas, y no arrastra comisiones ni cuotas anuales. Presupuesto cerrado antes de arrancar.</p>
+        </div>
+        <div class="diag-layout__offer lp-price__card">
+          <span class="lp-price__from">Presupuesto a medida</span>
+          <p class="lp-price__lead">Depende de cuántas pantallas necesites y de si la app tiene que tener cuentas, cobros o funcionar sin señal. Lo armás vos mismo en el cotizador.</p>
+          <ul class="checklist">
+            <li>Presupuesto cerrado antes de empezar — sin sorpresas</li>
+            <li>Sin costo de arranque</li>
+            <li>Sabés exactamente qué pagás y por qué</li>
+          </ul>
+          <button type="button" class="btn btn--ghost" data-cotizador="apps" data-location="inversion_cotizador">Quiero saber el precio</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       CTA FINAL
+  ====================================================== -->
+  <section class="section section--cta" aria-label="Contacto">
+    <div class="container cta-final">
+      <h2 class="cta-final__title">Tu app, en el celular de tus clientes <span class="mark">esta semana</span>.</h2>
+      <p class="cta-final__sub">Armá tu presupuesto en un minuto y recibí la propuesta completa en PDF por email, con el detalle de todo lo que incluye.</p>
+      <div class="cta-final__actions">
+        <button type="button" class="btn btn--ghost btn--lg" data-cotizador="apps" data-location="cta_final">Quiero saber el precio</button>
+      </div>
+      <a href="../index.html" class="lp-back">← Volver a ChichaLabs Studio</a>
+    </div>
+  </section>
+
+  <!-- FOOTER minimal -->
+  <footer class="lp-footer" role="contentinfo">
+    <div class="container lp-footer__inner">
+      <p class="lp-footer__brand">[ CHICHALABS ] STUDIO</p>
+      <nav class="lp-footer__links" aria-label="Links">
+        <a href="../index.html">Inicio</a>
+        <a href="../index.html#servicios">Servicios</a>
+        <a href="../privacidad.html">Privacidad</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- WhatsApp flotante -->
+  <a data-location="flotante" href="https://wa.me/5491178221468?text=Hola%20ChichaLabs%20%F0%9F%91%8B%20Vengo%20de%20la%20landing%20de%20Apps.%20Quiero%20una%20app%20que%20se%20instale%20en%20el%20celular%20sin%20pasar%20por%20las%20tiendas.%20%C2%BFC%C3%B3mo%20arrancamos%3F"
+     class="wa-float" target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.83L0 24l6.35-1.66A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.23-3.48-8.52ZM12 22c-1.85 0-3.58-.5-5.07-1.37l-.36-.22-3.77.99 1-3.67-.23-.37A10 10 0 0 1 2 12C2 6.48 6.48 2 12 2c2.67 0 5.19 1.04 7.07 2.93A9.93 9.93 0 0 1 22 12c0 5.52-4.48 10-10 10Zm5.47-7.4c-.3-.15-1.77-.87-2.04-.97-.28-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.57-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.47s1.07 2.87 1.22 3.07c.15.2 2.1 3.2 5.1 4.5.71.3 1.27.5 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" fill="currentColor"/>
+    </svg>
+  </a>
+
+  <script defer src="../js/vendor/gsap.min.js?v=20260812"></script>
+  <script defer src="../js/vendor/ScrollTrigger.min.js?v=20260812"></script>
+  <script defer src="../js/main.js?v=20260812"></script>
+  <script defer src="../js/cotizador.js?v=20260812"></script>
+  <script defer src="../js/pixel-events.js?v=20260812"></script>
+</body>
+</html>

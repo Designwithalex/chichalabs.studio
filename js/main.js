@@ -402,15 +402,13 @@
       obs.observe(el);
     }
 
-    /* Los iconos ahora están dentro de .service-row */
-    const websIcon = document.querySelector('.icon--webs');
-    if (websIcon) onVisible(websIcon.closest('.service-row') || websIcon, () => websIcon.classList.add('is-animated'));
-
-    const dashIcon = document.querySelector('.icon--dashboards');
-    if (dashIcon) onVisible(dashIcon.closest('.service-row') || dashIcon, () => dashIcon.classList.add('is-animated'));
-
-    const iaIcon = document.querySelector('.icon--ia');
-    if (iaIcon) onVisible(iaIcon.closest('.service-row') || iaIcon, () => iaIcon.classList.add('is-animated'));
+    /* Los iconos ahora están dentro de .service-row. Un servicio nuevo se suma
+       acá y en las reglas .icon--<nombre> de styles.css, nada más. */
+    ['webs', 'apps', 'dashboards', 'ia'].forEach((nombre) => {
+      const icono = document.querySelector('.icon--' + nombre);
+      if (!icono) return;
+      onVisible(icono.closest('.service-row') || icono, () => icono.classList.add('is-animated'));
+    });
   }
 
   /* ============================================================

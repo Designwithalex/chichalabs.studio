@@ -45,8 +45,12 @@
   grid-template-columns: 1fr;
   gap: 0.875rem;
 }
+/* Son 5 servicios: la grilla salta 2 → 3 → 5 para no dejar nunca una tarjeta
+   huérfana sola en la última fila. Si algún día son 6, 3 columnas ya cierra
+   solo y alcanza con sacar el último breakpoint. */
 @media (min-width: 620px)  { .quoter__services { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1040px) { .quoter__services { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 820px)  { .quoter__services { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .quoter__services { grid-template-columns: repeat(5, 1fr); } }
 
 .qservice {
   display: flex;
