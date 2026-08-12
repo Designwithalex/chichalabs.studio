@@ -15,6 +15,8 @@ declare(strict_types=1);
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/proposal-calculator.css">
+  <!-- El importador del cotizador reusa .qgroup/.qmod/.qstep-btn tal cual -->
+  <link rel="stylesheet" href="/css/cotizador.css">
   <link rel="stylesheet" href="/admin/css/admin.css">
 </head>
 <body class="admin-body">

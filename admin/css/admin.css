@@ -350,6 +350,41 @@
 /* dentro del preview el sticky de totales no aplica (es una vista embebida) */
 .admin-preview-frame .pc-totals { position: static; }
 
+/* ── Importador del cotizador ──
+   Las preguntas se dibujan con las clases de /css/cotizador.css (.qgroup,
+   .qmod, .qstep-btn), que ya viven sobre los tokens compartidos y quedan
+   bien sobre el fondo oscuro del admin. Acá sólo va lo propio del importador:
+   el layout y la tabla del preview. */
+.admin-cq__layout { display: flex; flex-direction: column; gap: var(--ad-s-6); margin-top: var(--ad-s-5); }
+.admin-cq__modules .qgroup:first-child .qgroup__title { padding-top: 0; }
+/* `.admin-form` fija display:flex y le gana al [hidden] del navegador — el
+   preview arranca oculto hasta que hay una selección. Mismo caso que la
+   nota de `.admin-form label` más arriba. */
+.admin-cq__result[hidden] { display: none; }
+.admin-cq__result { border-top: 1px solid var(--ad-line); padding-top: var(--ad-s-5); }
+.admin-cq__title { font-family: var(--font-display); font-size: 0.95rem; color: var(--ad-ink); }
+
+.admin-cq__table { min-width: 34rem; }
+.admin-cq__on { width: 2.5rem; text-align: center; }
+.admin-cq__on input[type="checkbox"] {
+  width: 1.15rem; height: 1.15rem; padding: 0;
+  accent-color: var(--green); cursor: pointer;
+}
+/* Doble clase a propósito: `.admin-form input { width: 100% }` es más
+   específico que una sola y estiraría el campo a todo el ancho de la celda. */
+.admin-cq__result .admin-cq__hours {
+  width: 5.5rem; padding: 0.35rem 0.5rem;
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+/* fila destildada — sigue en la tabla pero no se importa ni suma al total */
+.admin-cq__table tr.is-off { opacity: 0.45; }
+.admin-cq__table tr.is-off .admin-cell-name { text-decoration: line-through; }
+
+.admin-cq__total {
+  font-family: var(--font-mono); font-size: 0.9rem; color: var(--green);
+  font-variant-numeric: tabular-nums; margin-top: var(--ad-s-3);
+}
+
 /* ── Danger zone ── */
 .admin-danger-zone { border-color: var(--st-danger-line); }
 .admin-danger-zone > h2 { color: var(--st-danger); border-bottom-color: var(--st-danger-line); }

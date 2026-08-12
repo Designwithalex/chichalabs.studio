@@ -155,6 +155,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_module') {
         $stmt = $pdo->prepare('DELETE FROM proposal_modules WHERE id = ? AND proposal_id = ?');
         $stmt->execute([(int) ($_POST['module_id'] ?? 0), $proposalId]);
+    } elseif ($action === 'import_cotizacion') {
+        /* Trae una selección del cotizador como módulos de esta propuesta.
+           Llegan las horas EDITADAS en el preview, no las que devolvió n8n:
+           acá el que carga es un admin autenticado y puede corregir la
+           estimación del catálogo para este cliente. La regla de "no confiar
+           en lo que manda el navegador" es del cotizador público, donde quien
+           arma la selección es un visitante anónimo.
+
+           Lo que sí se importa siempre son las HORAS, nunca el precio: el
+           cotizador público cotiza a $45.000/h en pesos y esta propuesta puede
+           estar en otra moneda y a otro valor hora. */
+        $rows = $_POST['mod'] ?? [];
+        if (is_array($rows) && $rows) {
+            $rate = (float) ($proposal['hourly_rate'] ?? 0);
+            try {
+                $pdo->beginTransaction();
+
+                if (isset($_POST['replace'])) {
+                    $pdo->prepare('DELETE FROM proposal_modules WHERE proposal_id = ?')->execute([$proposalId]);
+                }
+
+                $stmt = $pdo->prepare('SELECT COALESCE(MAX(module_number), 0) FROM proposal_modules WHERE proposal_id = ?');
+                $stmt->execute([$proposalId]);
+                $number = (int) $stmt->fetchColumn();
+
+                $insert = $pdo->prepare(
+                    'INSERT INTO proposal_modules
+                     (proposal_id, module_number, name, category, description, hours, price_min, price_max, billing_type, is_locked, default_checked, sort_order)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)'
+                );
+
+                $imported = 0;
+                /* Techo defensivo: el catálogo más grande hoy son ~10 módulos
+                   por servicio, así que 60 filas ya es un POST amasado a mano. */
+                foreach (array_slice($rows, 0, 60) as $row) {
+                    if (!is_array($row) || !isset($row['on'])) { continue; }
+
+                    $name  = trim((string) ($row['name'] ?? ''));
+                    $hours = (float) ($row['hours'] ?? 0);
+                    if ($name === '' || $hours <= 0) { continue; }
+
+                    $price = round($hours * $rate, 2);
+                    $number++;
+                    $insert->execute([
+                        $proposalId,
+                        $number,
+                        $name,
+                        trim((string) ($row['category'] ?? '')) ?: 'General',
+                        trim((string) ($row['description'] ?? '')) ?: null,
+                        $hours,
+                        $price,
+                        $price,
+                        /* El cotizador no distingue costo único de mensual: todo
+                           entra como único y se cambia después, módulo por módulo. */
+                        'once',
+                        $number,
+                    ]);
+                    $imported++;
+                }
+
+                $pdo->commit();
+
+                $_SESSION['flash'] = $imported > 0
+                    ? ['ok', 'Se importaron ' . $imported . ' módulo' . ($imported === 1 ? '' : 's') . ' del cotizador.' . ($rate > 0 ? '' : ' Cargá el valor hora para que tomen precio.')]
+                    : ['error', 'No se importó ningún módulo: quedaron todos destildados o sin horas.'];
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                $_SESSION['flash'] = ['error', 'No pudimos importar los módulos. Probá de nuevo.'];
+            }
+        }
     } elseif ($action === 'add_note') {
         $question = trim((string) ($_POST['question'] ?? ''));
         if ($question !== '') {
@@ -356,6 +426,61 @@ require __DIR__ . '/inc/header.php';
       });
     })();
     </script>
+
+    <section class="admin-section admin-cq" id="cotizador-import">
+      <h2>Armar desde el cotizador</h2>
+      <p class="admin-muted">Las mismas preguntas del cotizador de la web, con el catálogo de módulos de Notion. Importa las <strong>horas</strong> de cada módulo; el precio lo pone esta propuesta (valor hora × horas), así que podés cotizar en la moneda que quieras.</p>
+
+      <div class="admin-form">
+        <label class="admin-field--sm">Servicio
+          <select id="cq-servicio"></select>
+        </label>
+      </div>
+
+      <div id="cq-body" hidden>
+        <div class="admin-cq__layout">
+          <div class="admin-cq__modules" id="cq-modules" aria-live="polite"></div>
+
+          <form method="POST" class="admin-form admin-cq__result" id="cq-form" hidden>
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="import_cotizacion">
+            <h3 class="admin-cq__title">Lo que se va a importar</h3>
+            <div class="admin-table-wrap">
+              <table class="admin-table admin-cq__table">
+                <thead>
+                  <tr>
+                    <th class="admin-cq__on"><span class="admin-sr-only">Incluir</span></th>
+                    <th>Módulo</th>
+                    <th>Categoría</th>
+                    <th class="admin-num">Horas</th>
+                    <th class="admin-num">Precio</th>
+                  </tr>
+                </thead>
+                <tbody id="cq-rows"></tbody>
+              </table>
+            </div>
+            <p class="admin-cq__total" id="cq-total">—</p>
+            <p class="admin-hint">Las horas salen del catálogo pero son una estimación: editalas acá si este cliente lleva más o menos trabajo. Todo entra como costo único — si algún módulo es mensual, cambialo después desde la tabla de módulos.</p>
+            <label class="admin-check"><input type="checkbox" name="replace"> Reemplazar los <?= count($modules) ?> módulo<?= count($modules) === 1 ? '' : 's' ?> que ya tiene la propuesta</label>
+            <button type="submit" class="btn btn--ghost">Importar a la propuesta</button>
+          </form>
+        </div>
+      </div>
+
+      <p class="admin-alert" id="cq-error" hidden></p>
+    </section>
+
+    <script>
+      /* Valor hora y moneda de ESTA propuesta — el cotizador público cotiza a
+         otro valor hora y siempre en pesos. */
+      window.CQ_CONFIG = {
+        rate: <?= (float) ($proposal['hourly_rate'] ?? 0) ?>,
+        currency: <?= json_encode($proposal['currency'], JSON_HEX_TAG) ?>,
+        fxRate: <?= (float) ($proposal['fx_rate'] ?? 0) ?>,
+        currency2: <?= json_encode((string) ($proposal['secondary_currency'] ?? ''), JSON_HEX_TAG) ?>
+      };
+    </script>
+    <script src="/admin/js/cotizador-admin.js"></script>
 
     <section class="admin-section">
       <h2><?= $editModule ? 'Editar módulo' : 'Nuevo módulo' ?></h2>
