@@ -53,6 +53,14 @@ const CAPI_EVENTOS = [
     'PageView', 'ViewContent', 'Lead', 'Schedule',
     'LandingEngaged', 'QuoteStarted', 'QuotePriced',
     'QuoteContactOpened', 'QuoteUnavailable',
+    /* 2026-08-18 · señal dura y señal blanda separadas.
+       LeadCalificado  = envío del cotizador confirmado por el backend. Es el
+                         evento contra el que tiene que optimizar la campaña.
+       ContactoIniciado = click a WhatsApp. Antes disparaba `Lead` y con un
+                         solo toque valía una conversión: es lo que dejó a
+                         Meta comprando toques accidentales en Audience
+                         Network. Ahora es diagnóstico, no optimización. */
+    'LeadCalificado', 'ContactoIniciado',
 ];
 
 /** Corta con un JSON. El front no lo mira, pero sirve para debuggear a mano. */

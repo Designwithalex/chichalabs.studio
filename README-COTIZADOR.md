@@ -76,7 +76,10 @@ GET  {n8n}/webhook/cotizador/modulos?servicio=automatizaciones
 POST {n8n}/webhook/cotizador/precio
         └─→ Notion → suma horas × $45.000 → { total, horas, desglose }
         │
-        │  completa nombre + email y envía
+        │  completa nombre + email + empresa + teléfono AR y envía
+        │  (los 4 son obligatorios desde el 2026-08-18; el front valida
+        │   formato, honeypot y piso de tiempo — ver PIXEL-EVENTS.md →
+        │   "Guardas anti-accidente")
         ▼
 POST {n8n}/webhook/cotizador/propuesta
         ├─→ Notion → recalcula (nunca confía en el precio del navegador)

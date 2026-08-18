@@ -138,12 +138,31 @@
   }
 
   /* ============================================================
-     Lead — click a WhatsApp (LA conversión, evento de optimización)
+     ContactoIniciado — click a WhatsApp (señal BLANDA, de diagnóstico)
      Schedule — click a "Agendá una reunión" (el otro camino de cierre)
 
-     Un solo nombre de evento para todos los clicks a WhatsApp de todo el
-     sitio: con el volumen de esta campaña partir el signal en varios
-     eventos lo dejaría inservible. La ubicación va como parámetro.
+     2026-08-18 — POR QUÉ ESTO YA NO ES `Lead`
+
+     Hasta hoy un click en cualquier link de WhatsApp disparaba `Lead`, que
+     es el evento de optimización de la campaña. O sea: UN SOLO TOQUE sobre
+     el globo flotante — fijo abajo a la derecha, justo donde cae el pulgar —
+     valía una conversión. Sin formulario, sin validar nada, sin que nadie
+     del otro lado confirme que hay una persona interesada.
+
+     Meta puja por volumen al menor costo: le pedimos "conseguime `Lead`" y
+     encontró la forma más barata de fabricarlo. En la campaña C1 fueron 60
+     leads en 6 días, el 97% del gasto en Audience Network, el 65% de los
+     leads con 65+ años para un servicio B2B, y un CTR de 20-25% que SUBÍA
+     con la edad. Eso no es interés: es el dedo tocando donde no quería.
+     Mientras el evento se dispare con un toque, el algoritmo va a seguir
+     comprando toques accidentales, porque son lo más barato que hay.
+
+     Así que el toque a WhatsApp pasa a ser un custom de diagnóstico. Se
+     sigue midiendo (sirve para el embudo y para el público de exclusión),
+     pero ya NO es la señal contra la que Meta optimiza. `Lead` queda
+     reservado para el único envío que alguien confirma de verdad: el
+     formulario del cotizador, y recién cuando el backend responde ok.
+     Ver PIXEL-EVENTS.md → "Señal blanda vs. señal dura".
   ============================================================ */
   function initClicks() {
     document.addEventListener('click', (e) => {
@@ -155,7 +174,7 @@
       const href = link.getAttribute('href') || '';
 
       if (href.indexOf('wa.me') !== -1) {
-        track('Lead', {
+        trackCustom('ContactoIniciado', {
           content_name: pagina.nombre,
           content_category: pagina.categoria,
           content_ids: [pagina.slug],

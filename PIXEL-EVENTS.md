@@ -24,8 +24,10 @@ dinámicamente y no depende de qué otro JS cargue cada página.
 |---|---|---|---|
 | `PageView` | standard | Todas las páginas, en el load | Base de todo. Lo dispara el snippet, no `pixel-events.js`. |
 | `ViewContent` | standard | Load de `servicios/*.html` | **Público base de retargeting.** "Vio la landing de un servicio". |
-| `Lead` | standard | Click en cualquier link `wa.me` **y** envío del formulario del cotizador | **La conversión.** Es el evento de optimización de la campaña. |
-| `Schedule` | standard | Click en cualquier link `calendar.app.google` | El otro camino de cierre: reunión agendada en vez de WhatsApp. |
+| `LeadCalificado` | custom | Envío del cotizador **confirmado por el backend** | **LA conversión. Es el evento de optimización de la campaña** desde el 2026-08-18. Ver "Señal blanda vs. señal dura". |
+| `Lead` | standard | Lo mismo que `LeadCalificado`, en el mismo momento | Mantiene andando los públicos y los informes que ya existían. **Ya no lo dispara el click a WhatsApp.** |
+| `ContactoIniciado` | custom | Click en cualquier link `wa.me` | **Diagnóstico.** Era `Lead` hasta el 2026-08-18: un toque valía una conversión y eso es lo que rompió la campaña C1. |
+| `Schedule` | standard | Click en cualquier link `calendar.app.google` | El otro camino de cierre: reunión agendada en vez de WhatsApp. **No usarlo como evento de optimización** — es de un toque, igual que `ContactoIniciado`. |
 | `LandingEngaged` | custom | Sección del caso visible en una landing, una sola vez | **Diagnóstico**, no público. Ver abajo. |
 | `QuoteStarted` | custom | Eligió un servicio en el cotizador | Arranque del embudo del cotizador. |
 | `QuotePriced` | custom | Vio un precio por primera vez (una vez por servicio elegido) | **Diagnóstico.** Contra `QuoteStarted`: cuántos abren el cotizador y se van sin llegar al número. |
@@ -43,16 +45,18 @@ Events Manager.
 { content_name: 'Automatizaciones e integraciones', content_category: 'servicio',
   content_ids: ['automatizaciones'], content_type: 'product' }
 
-// Lead / Schedule
+// ContactoIniciado / Schedule
 { content_name: …, content_category: 'servicio' | 'sitio', content_ids: [slug],
   location: 'hero' | 'inversion' | 'cta_final' | 'footer' | 'flotante' | 'nav' | 'nav_mobile' | 'contenido',
   source_page: '/servicios/automatizaciones.html' }
 
-// Lead del cotizador (lo dispara js/cotizador.js, no pixel-events.js)
+// LeadCalificado y Lead (los dispara js/cotizador.js, no pixel-events.js).
+// Mismos parámetros los dos, pero cada uno con su propio event_id.
 { content_name: 'Automatizaciones', content_category: 'cotizador',
   content_ids: ['automatizaciones'],
   location: 'hero_cotizador' | 'inversion_cotizador' | 'cta_final' | 'nav_mobile' | 'cotizador',
   value: 1170000, currency: 'ARS' }
+// + user_data { em, ph } — el endpoint los hashea con SHA-256 antes de Meta
 
 // LandingEngaged
 { content_name: …, content_category: 'servicio', content_ids: [slug], section: 'caso' }
@@ -68,22 +72,37 @@ contenedor (footer / nav / sección) para no ensuciar el corte con `undefined`
 **Retargeting fase 2 — "visitó la landing y no convirtió":**
 
 ```
-INCLUIR: ViewContent  donde content_ids contiene 'automatizaciones'
-EXCLUIR: Lead         (todos)
+INCLUIR: ViewContent       donde content_ids contiene 'automatizaciones'
+EXCLUIR: Lead              (todos)
+EXCLUIR: ContactoIniciado  (todos)
 ```
 
-Ese es exactamente el público de la fase 2. La exclusión por `Lead` es lo que
-evita pagarle impresiones a gente que ya te escribió.
+Ese es exactamente el público de la fase 2. La exclusión es lo que evita
+pagarle impresiones a gente que ya te escribió.
+
+> **Ojo — hay que tocar este público en Events Manager.** Desde el 2026-08-18
+> el click a WhatsApp dispara `ContactoIniciado` y ya no `Lead`. Si el público
+> excluye sólo por `Lead`, a todo el que te escriba por WhatsApp le vas a
+> seguir pagando impresiones. Sumá la segunda exclusión a mano.
 
 ## Decisiones que parecen raras y no lo son
 
-**Un solo `Lead` para todos los clicks de WhatsApp del sitio, no un evento por
-página.** Con un budget de $140.000 y un CPL sano de $8.000-15.000 estás
-esperando entre 9 y 17 leads **en total**, no por semana. Meta necesita ~50
-conversiones semanales para salir de fase de aprendizaje. Partir un signal ya
-escaso en varios nombres de evento lo vuelve inservible. La diferencia entre
-páginas y ubicaciones va en los parámetros, que sirve igual para analizar y no
-fragmenta la optimización.
+**~~Un solo `Lead` para todos los clicks de WhatsApp del sitio~~ — REVERTIDO
+el 2026-08-18.** El razonamiento original era: con un budget de $140.000 y un
+CPL sano de $8.000-15.000 esperás 9 a 17 leads **en total**; Meta necesita ~50
+conversiones semanales para salir de fase de aprendizaje; partir un signal ya
+escaso en varios nombres de evento lo vuelve inservible.
+
+Eso era cierto mientras el problema fuera la **escasez** de señal. El problema
+pasó a ser el opuesto: la señal era tan barata de producir que Meta la fabricó
+en cantidad industrial y toda basura (60 leads en 6 días, ninguno cliente). Un
+evento que se dispara con un toque no se puede defender con "es que tenemos
+poco volumen" — el volumen que trae es ruido, y el ruido no enseña, confunde.
+
+Sigue valiendo la mitad buena de la idea: **un solo evento duro**, no uno por
+página ni por servicio. Lo que cambió es cuál es ese evento y qué hace falta
+para dispararlo. La diferencia entre páginas y ubicaciones sigue yendo en los
+parámetros, que sirve para analizar y no fragmenta la optimización.
 
 **La home no dispara `ViewContent`.** Su `PageView` alcanza para armar un
 público por URL, y mezclarla con las landings rompería el corte por servicio,
@@ -111,6 +130,12 @@ dispara el mismo `Lead`, con `location: 'cotizador_modal'` y además `value`
 (el precio calculado) y `currency: 'ARS'`. Al ser el mismo nombre de evento,
 la campaña sigue optimizando contra la misma señal y el público de exclusión
 sigue funcionando igual.
+
+> **Desactualizado el 2026-08-18.** El click a WhatsApp ya no dispara `Lead`
+> sino `ContactoIniciado`, y el evento de optimización pasó a ser
+> `LeadCalificado`. El resto de esta sección (el embudo del cotizador, el
+> corte por `location`, el `value`) sigue vigente tal cual. Ver
+> "Señal blanda vs. señal dura" más abajo.
 
 Qué cambia en la práctica:
 
@@ -147,6 +172,67 @@ eventos y arruinaría la tasa.
 
 **No usamos `Contact`.** Es redundante con `Lead` para la misma acción y
 partiría el signal.
+
+### 2026-08-18 — Señal blanda vs. señal dura
+
+**Qué pasó.** La campaña `C1 · Cotizador` hizo 60 leads en 6 días a ARS 664
+cada uno y **ninguno se convirtió en cliente**. El 97% del gasto se fue a
+Audience Network (apps y juegos de terceros) y de ahí salieron los 60 leads;
+Facebook e Instagram juntos, cero. El 65% de los leads tenía 65+ años para un
+servicio B2B de automatización e IA. El CTR era de 20-25% (10x lo normal) y
+**subía con la edad**: eso es patrón de clic accidental, no de interés.
+
+**La causa raíz es de código, no de segmentación.** El evento de optimización
+era `Lead`, y `Lead` se disparaba con un click en cualquier link de WhatsApp
+— incluido el globo flotante, fijo abajo a la derecha, justo donde cae el
+pulgar. Un toque, cero validación, cero confirmación de nadie: una conversión.
+
+Meta puja por volumen al menor costo posible. Si le pedís `Lead` y `Lead`
+cuesta un toque, va a comprar toques. Los encontró más baratos en gente mayor
+tocando sin querer un banner adentro de un jueguito. **Mientras el evento sea
+fácil de disparar, el algoritmo va a seguir buscando basura barata**, tengas
+la segmentación que tengas. Sacar Audience Network y recortar la edad ayuda,
+pero no arregla el incentivo.
+
+**La regla que quedó:**
+
+| | Blando | Duro |
+|---|---|---|
+| Eventos | `ContactoIniciado`, `Schedule`, `QuoteStarted`, `QuotePriced`, `QuoteContactOpened`, `LandingEngaged` | `LeadCalificado` y `Lead` |
+| Cuesta | un toque | 4 campos válidos + confirmación del backend |
+| Sirve para | diagnóstico, embudo, públicos de exclusión | **optimizar la campaña** |
+
+Un evento blando **nunca** puede ser el evento de optimización de una campaña.
+Si algún día hace falta poner uno ahí, primero hay que volverlo duro.
+
+**Por qué `LeadCalificado` existe además de `Lead`.** Los dos salen en el mismo
+momento y con los mismos parámetros, y a primera vista es redundante. No lo es:
+en Meta, `Lead` arrastra el historial de aprendizaje contaminado con los 60
+leads basura de C1. Apuntar la campaña a un nombre de evento **sin historia**
+le da al algoritmo una hoja limpia, y ese nombre por definición sólo se puede
+disparar completando el formulario entero. `Lead` se sigue mandando para no
+romper los públicos ni los informes que ya existían.
+
+### Guardas anti-accidente del formulario
+
+Todo esto vive en `js/cotizador.js`, en `onSubmit()` y `validar()`.
+
+| Guarda | Qué corta | Dónde |
+|---|---|---|
+| **Después del `await`** | El evento sale recién cuando n8n recalculó el precio, generó el PDF y mandó el mail. `api()` tira si la respuesta no es 2xx. | `onSubmit()` |
+| **Honeypot** | Campo `url_sitio`, fuera de pantalla y del tab order. Si viene con algo, es un script: se muestra la vista de enviado y no se manda nada. | `onSubmit()`, guarda 1 |
+| **Interacción real** | Exige un `pointerdown`, `keydown` o `input` adentro del formulario. El autofill del browser dispara `input`, así que no molesta a nadie. | `onSubmit()`, guarda 2 |
+| **Piso de tiempo** | 5 segundos entre abrir el formulario y enviarlo (`MIN_SEGUNDOS_FORM`). Avisa y deja reintentar, no bloquea. | `onSubmit()`, guarda 3 |
+| **Empresa obligatoria** | El campo que más separa B2B de curioso. | `validar()` |
+| **Teléfono AR obligatorio** | Normaliza los formatos reales (`+54 9 11…`, `011 15…`, `11 2345 6789`) y exige 10 dígitos nacionales con característica válida. **Rechaza números de otros países a propósito.** | `telefonoARValido()` |
+| **Email más estricto** | TLD alfabético de 2+, sin puntos pegados ni punto al borde. | `emailValido()` |
+
+**No hay validación equivalente del lado de n8n.** El nodo `Armar propuesta`
+sigue exigiendo sólo nombre + email (ver `n8n/cotizador-propuesta.json`). O sea:
+alguien que pegue un POST a mano al webhook puede saltearse todo esto. **No
+importa para el pixel** — los eventos los dispara el navegador, no n8n, así
+que un POST directo no genera ninguna conversión. Sí importaría si algún día
+los eventos se mandaran desde n8n: ahí habría que replicar las reglas allá.
 
 ## Envío doble — browser + Conversions API
 

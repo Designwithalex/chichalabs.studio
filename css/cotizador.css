@@ -363,6 +363,19 @@
 }
 .qform__error[hidden] { display: none; }
 
+/* Honeypot anti-bot. Se saca de la vista con posicionamiento, NO con
+   `display:none` ni `visibility:hidden`: los scripts que llenan formularios
+   suelen saltearse los campos ocultos por esas dos propiedades, y justo lo
+   que queremos es que este lo completen. Para una persona es invisible e
+   inalcanzable igual (tabindex="-1" en el input). */
+.qform__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .qform__submit { width: 100%; justify-content: center; margin-top: 0.25rem; }
 .qform__submit:disabled { opacity: 0.5; cursor: wait; }
 

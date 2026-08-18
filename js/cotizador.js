@@ -32,6 +32,13 @@
   const TIMEOUT  = 12000;   // ms — n8n arranca frío a veces
   const DEBOUNCE = 300;     // ms entre cambio y recálculo
 
+  /* Piso de tiempo entre que se abre el formulario y se envía. Nadie completa
+     cuatro campos obligatorios en menos de esto; un script o un rebote de
+     dedo, sí. No bloquea a nadie de forma definitiva: el primer intento
+     demasiado rápido muestra un aviso y el segundo ya pasa (para entonces el
+     reloj corrió solo). Ver PIXEL-EVENTS.md → "Guardas anti-accidente". */
+  const MIN_SEGUNDOS_FORM = 5;
+
   /* El id tiene que coincidir con el mapa SERVICIOS de los Code nodes de
      n8n. Ver README-COTIZADOR.md → "Cómo agregar un servicio nuevo". */
   const SERVICIOS = [
@@ -107,8 +114,19 @@
             '<form class="qform" novalidate>' +
               campo('Nombre y apellido *', 'nombre', 'text', 'name', true) +
               campo('Email *', 'email', 'email', 'email', true) +
-              campo('Empresa o proyecto', 'empresa', 'text', 'organization') +
-              campo('Teléfono / WhatsApp', 'telefono', 'tel', 'tel') +
+              /* Empresa y teléfono pasaron a obligatorios a propósito: son los
+                 dos campos que separan un prospecto real de un toque sin
+                 querer. La fricción no es un efecto colateral, es el punto. */
+              campo('Empresa o proyecto *', 'empresa', 'text', 'organization', true) +
+              campo('Teléfono / WhatsApp *', 'telefono', 'tel', 'tel', true) +
+              /* Honeypot. Invisible y fuera del tab order: una persona no lo
+                 puede completar, un bot que llena todo sí. Si viene con algo,
+                 el envío se descarta sin red y sin evento. */
+              '<div class="qform__hp" aria-hidden="true">' +
+                '<label>No completar este campo' +
+                  '<input type="text" name="url_sitio" tabindex="-1" autocomplete="off">' +
+                '</label>' +
+              '</div>' +
               '<label class="qform__field">' +
                 '<span class="qform__label">Contanos brevemente qué necesitás</span>' +
                 '<textarea name="mensaje" rows="3"></textarea>' +
@@ -200,7 +218,12 @@
          puede abrir y cerrar, y sin esto un solo visitante indeciso mandaría
          veinte eventos y arruinaría la tasa de abandono. `elegir()` los
          resetea porque cambiar de servicio arranca un embudo nuevo. */
-      vioPrecio: false, abrioForm: false
+      vioPrecio: false, abrioForm: false,
+      /* Guardas anti-accidente del envío. `formAbiertoEn` es el reloj del piso
+         de tiempo; `huboInteraccion` confirma que alguien tocó o tipeó de
+         verdad adentro del formulario (el autocompletado del browser dispara
+         `input`, así que un usuario legítimo con autofill también la marca). */
+      formAbiertoEn: 0, huboInteraccion: false
     };
 
     if (el.services) {
@@ -213,6 +236,19 @@
     el.cta.addEventListener('click', abrirForm);
     el.back.addEventListener('click', () => showView('precio'));
     el.form.addEventListener('submit', onSubmit);
+
+    /* Delegado, pero SÓLO cuenta si el evento salió de un campo. Atado al
+       form entero no serviría de nada: el pointerdown del propio botón de
+       enviar marcaría el flag y la guarda daría siempre true. */
+    const marcarInteraccion = (e) => {
+      const t = e.target;
+      if (t && typeof t.matches === 'function' && t.matches('input, textarea')) {
+        state.huboInteraccion = true;
+      }
+    };
+    el.form.addEventListener('pointerdown', marcarInteraccion);
+    el.form.addEventListener('keydown', marcarInteraccion);
+    el.form.addEventListener('input', marcarInteraccion);
 
     if (fijo) {
       elegir(fijo);
@@ -259,6 +295,8 @@
       state.precio = null;
       state.vioPrecio = false;
       state.abrioForm = false;
+      state.formAbiertoEn = 0;
+      state.huboInteraccion = false;
 
       showView('precio');
       el.layout.hidden = false;
@@ -461,6 +499,9 @@
        quiso dejar los datos" — dos problemas con arreglos opuestos. */
     function abrirForm() {
       showView('form');
+      /* Fuera del early return de abajo: el reloj del piso de tiempo se
+         reinicia cada vez que el formulario se abre, no sólo la primera. */
+      state.formAbiertoEn = Date.now();
       if (state.abrioForm) return;
       state.abrioForm = true;
       trackCustom('QuoteContactOpened', {
@@ -477,6 +518,28 @@
       ocultarError();
 
       const fd = new FormData(el.form);
+
+      /* ── Guarda 1 · honeypot ───────────────────────────────────────
+         El campo está fuera de pantalla, con aria-hidden y tabindex -1:
+         una persona no puede completarlo. Si trae algo es un script que
+         llenó todos los inputs. Mostramos la vista de enviado igual —
+         que el bot crea que funcionó y no reintente con otra estrategia —
+         pero no se manda nada ni se dispara ningún evento. */
+      if (String(fd.get('url_sitio') || '').trim() !== '') {
+        console.warn('[cotizador] envío descartado: honeypot');
+        showView('ok');
+        return;
+      }
+
+      /* ── Guarda 2 · interacción real ───────────────────────────────
+         Nadie llega al submit sin haber tocado o tipeado adentro del
+         formulario. Si el flag está en false, el submit lo disparó algo
+         que no es una persona usando la página. */
+      if (!state.huboInteraccion) {
+        console.warn('[cotizador] envío descartado: sin interacción');
+        return;
+      }
+
       const contacto = {
         nombre:   String(fd.get('nombre')   || '').trim(),
         email:    String(fd.get('email')    || '').trim(),
@@ -487,6 +550,18 @@
 
       const malo = validar(contacto);
       if (malo) { mostrarError(malo.msg, malo.campo); return; }
+
+      /* ── Guarda 3 · piso de tiempo ─────────────────────────────────
+         Va acá y no antes de validar a propósito: si hay un campo mal, es
+         más útil decirle cuál que mandarlo a esperar. Cuatro campos
+         obligatorios no se completan en cinco segundos. No bloquea de
+         forma definitiva — avisa y deja reintentar, y para el segundo
+         click el reloj ya corrió solo. Un dedazo no llega ni al primero. */
+      const segundos = (Date.now() - state.formAbiertoEn) / 1000;
+      if (state.formAbiertoEn === 0 || segundos < MIN_SEGUNDOS_FORM) {
+        mostrarError('Tomate un segundo para revisar los datos y volvé a enviar.');
+        return;
+      }
 
       el.submit.disabled = true;
       el.submit.textContent = 'Enviando…';
@@ -500,10 +575,30 @@
         el.okMail.textContent = 'Te la mandamos a ' + contacto.email + '. Revisá tu casilla en los próximos minutos.';
         showView('ok');
 
-        /* Mismo evento Lead que los clicks a WhatsApp, a propósito: con el
-           volumen de la campaña, partir la señal en dos eventos la deja
-           inservible. La ubicación distingue el canal. Ver PIXEL-EVENTS.md. */
-        track('Lead', {
+        /* ── Los eventos de conversión ────────────────────────────────
+           Recién acá, después del `await`: `api()` tira si la respuesta no
+           es 2xx, así que llegar a esta línea significa que n8n recalculó
+           el precio, generó el PDF y mandó el mail. El evento no reporta
+           "alguien tocó un botón", reporta "hay una propuesta emitida".
+
+           Van los dos, y no es redundancia:
+
+           · `Lead` (standard) mantiene andando lo que ya existe — el
+             público de exclusión de retargeting y los informes históricos.
+             Lo que cambió es que ahora SÓLO sale de acá: el toque a
+             WhatsApp dejó de dispararlo (ver pixel-events.js).
+
+           · `LeadCalificado` (custom) es el evento nuevo contra el que
+             tiene que optimizar la campaña. Existe aparte porque `Lead`
+             arrastra en Meta un historial de aprendizaje contaminado con
+             los 60 leads basura de C1: apuntar a un nombre de evento sin
+             historia le da al algoritmo una hoja limpia, y por definición
+             sólo se puede disparar completando cuatro campos válidos y
+             esperando la confirmación del backend.
+
+           Cada uno lleva su propio event_id, así que no compiten entre sí
+           en la deduplicación browser ↔ CAPI. Ver PIXEL-EVENTS.md. */
+        const datosConversion = {
           content_name: state.servicioNombre,
           content_category: 'cotizador',
           content_ids: [state.servicio],
@@ -514,14 +609,18 @@
              hardcodeado le reporta a Meta pesos con montos de dólares y
              arruina la optimización por valor sin que nada falle a la vista. */
           currency: (state.precio && state.precio.moneda) || 'ARS'
-        }, {
+        };
+        const usuario = {
           /* Va en claro hasta el endpoint, que lo hashea con SHA-256 antes de
              mandarlo (Meta nunca recibe el email en limpio). Es el dato que
              más sube el Event Match Quality y el único evento del sitio donde
              lo tenemos: sin esto el match depende sólo de cookie + IP. */
           em: contacto.email,
           ph: contacto.telefono
-        });
+        };
+
+        track('Lead', datosConversion, usuario);
+        trackCustom('LeadCalificado', datosConversion, usuario);
       } catch (err) {
         mostrarError('No pudimos enviar la propuesta. Probá de nuevo en un momento, o escribinos por WhatsApp.');
         el.submit.disabled = false;
@@ -529,10 +628,63 @@
       }
     }
 
+    /* Validación de calificación, no de cortesía. Cada regla de acá es una
+       barrera que un prospecto real cruza sin pensarlo y un toque accidental
+       no cruza nunca. Ver PIXEL-EVENTS.md → "Guardas anti-accidente". */
     function validar(c) {
-      if (c.nombre.length < 2) return { campo: 'nombre', msg: 'Necesitamos tu nombre para armar la propuesta.' };
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.email)) return { campo: 'email', msg: 'Revisá el email: ahí es donde te llega el PDF.' };
+      if (c.nombre.length < 3 || !/[a-záéíóúüñ]{2}/i.test(c.nombre)) {
+        return { campo: 'nombre', msg: 'Necesitamos tu nombre para armar la propuesta.' };
+      }
+      if (!emailValido(c.email)) {
+        return { campo: 'email', msg: 'Revisá el email: ahí es donde te llega el PDF.' };
+      }
+      /* Empresa o proyecto: es el campo que más separa B2B de curioso. Con
+         dos caracteres alcanza para una sigla real ("AB"), pero no pasa un
+         punto suelto ni un espacio. */
+      if (c.empresa.length < 2 || !/[a-z0-9áéíóúüñ]{2}/i.test(c.empresa)) {
+        return { campo: 'empresa', msg: 'Contanos de qué empresa o proyecto se trata.' };
+      }
+      if (!telefonoARValido(c.telefono)) {
+        return { campo: 'telefono', msg: 'Dejanos un teléfono argentino con característica, así te podemos llamar (ej: 11 2345-6789).' };
+      }
       return null;
+    }
+
+    /* Más estricto que el regex de antes: exige TLD alfabético de 2+ y corta
+       los patrones que ni existen (puntos pegados, punto al principio o al
+       final de cada mitad). Sigue siendo deliberadamente laxo con el resto:
+       rebotar un email raro pero válido cuesta más que dejarlo pasar. */
+    function emailValido(v) {
+      if (v.length < 6 || v.length > 160) return false;
+      if (v.indexOf('..') !== -1) return false;
+      return /^[^\s@.][^\s@]*@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i.test(v);
+    }
+
+    /* Teléfono argentino plausible. Normaliza lo que la gente escribe de
+       verdad (+54 9 11 2345-6789 · 011 15 2345 6789 · 11 2345 6789) y exige
+       que quede un número nacional de 10 dígitos: característica + abonado.
+
+       OJO: rechaza números de otros países a propósito — el servicio es B2B
+       Argentina y la campaña pauta acá. Si algún día hay que aceptar el
+       exterior, la línea a tocar es el `!== 10` de abajo. */
+    function telefonoARValido(v) {
+      let d = String(v).replace(/\D+/g, '');
+
+      if (d.slice(0, 2) === '00') d = d.slice(2);          // 0054…
+      if (d.slice(0, 2) === '54' && d.length > 10) d = d.slice(2);
+      if (d.charAt(0) === '0') d = d.slice(1);             // 011…
+      if (d.charAt(0) === '9' && d.length === 11) d = d.slice(1);  // móvil con el 9
+      /* El 15 va DESPUÉS de la característica, así que sólo se puede sacar
+         mirando el largo total. Si al quitarlo quedan 10 dígitos, era eso. */
+      if (d.length > 10) {
+        const sin15 = d.replace(/^(\d{2,4})15(\d{6,8})$/, '$1$2');
+        if (sin15.length === 10) d = sin15;
+      }
+
+      if (d.length !== 10) return false;
+      if (!/^[1-3]/.test(d)) return false;       // características AR: 11, 2xx, 3xx
+      if (/^(\d)\1{9}$/.test(d)) return false;   // 1111111111 y familia
+      return true;
     }
 
     function mostrarError(msg, campo) {
