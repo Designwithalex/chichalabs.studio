@@ -1,4 +1,2 @@
 User-agent: *
-Disallow: /admin/
-Disallow: /portal/
-Disallow: /propuestas/
+Allow: /

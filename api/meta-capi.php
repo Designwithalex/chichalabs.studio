@@ -77,7 +77,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     done(405, 'Sólo POST');
 }
 
-/* Falla cerrado, igual que cotizador-pdf.php: sin token no mandamos nada. */
+/* Falla cerrado: sin token no mandamos nada. */
 if (!defined('META_CAPI_TOKEN') || META_CAPI_TOKEN === ''
     || !defined('META_PIXEL_ID') || META_PIXEL_ID === '') {
     error_log('meta-capi: falta META_CAPI_TOKEN o META_PIXEL_ID en config/config.php');
