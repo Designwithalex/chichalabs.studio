@@ -326,6 +326,24 @@
       }
     });
 
+    /* Product cards — stagger.
+       Tween propio y no compartido con .case-card: cada grilla tiene que
+       disparar con SU contenedor. Colgadas del trigger de .cases-grid, que
+       vive mucho mas abajo, las tarjetas de producto se quedaban en opacity
+       0 hasta que el usuario scrolleaba PASANDO la seccion — o sea, un hueco
+       vacio justo donde estan los productos. */
+    const productCards = document.querySelectorAll('.product-card');
+    if (productCards.length) {
+      productCards.forEach(el => el.classList.add('js-reveal'));
+      gsap.fromTo(productCards,
+        { opacity: 0, y: 28 },
+        {
+          opacity: 1, y: 0, duration: 0.65, ease: 'power2.out', stagger: 0.1,
+          scrollTrigger: { trigger: '.products-grid', start: 'top 80%', toggleActions: 'play none none none' },
+        }
+      );
+    }
+
     /* Case cards — stagger */
     const caseCards = document.querySelectorAll('.case-card');
     if (caseCards.length) {
@@ -503,7 +521,7 @@
   ============================================================ */
   function initSpotlight() {
     if (prefersReducedMotion || !window.matchMedia('(hover: hover)').matches) return;
-    const cards = document.querySelectorAll('.case-card, .diag-layout__offer');
+    const cards = document.querySelectorAll('.case-card, .product-card, .diag-layout__offer');
     cards.forEach(card => {
       card.addEventListener('pointermove', e => {
         const r = card.getBoundingClientRect();
