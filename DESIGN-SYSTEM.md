@@ -1,6 +1,12 @@
 # ChichaLabs Studio — Design System "Dark Premium"
 
-Sistema visual compartido por las **3 superficies** del producto: la landing pública, el **portal del cliente** y el **panel admin**. Lenguaje de referencia: Linear · Vercel · Stripe · Apple. Oscuro, sobrio, con mucho aire, tipografía impecable y micro-interacciones sutiles.
+> **2026-08-20 — el portal del cliente y el panel admin se dieron de baja.**
+> Nunca se usaron. Todo lo que este documento dice sobre `portal/`, `admin/`,
+> el presupuestador compartido y los estados de propuesta es **histórico**:
+> esos archivos ya no existen. Lo que sigue vigente es la sección 1 a 8 —
+> tokens, tipografía, color y componentes de la landing pública.
+
+Sistema visual de la landing pública (originalmente compartido con el portal del cliente y el panel admin). Lenguaje de referencia: Linear · Vercel · Stripe · Apple. Oscuro, sobrio, con mucho aire, tipografía impecable y micro-interacciones sutiles.
 
 La fuente de verdad son los tokens CSS en **`css/tokens.css`**. Este documento explica cómo está armado y cómo mantenerlo.
 

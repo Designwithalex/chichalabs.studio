@@ -1,9 +1,9 @@
 /* ============================================================================
    ChichaLabs Studio — DARK PREMIUM DESIGN SYSTEM  (tokens.css)
-   Shared source of truth for the 3 surfaces:
+   Source of truth for the public site:
      · Landing  → css/styles.css
-     · Admin    → admin/css/admin.css   (layers --ad-* on top)
-     · Portal   → portal/css/portal.css (layers --pt-* on top)
+   (El admin y el portal del cliente se dieron de baja el 2026-08-20;
+    los tokens --ad-* y --pt-* que los servían se fueron con ellos.)
 
    Reference language: Linear · Vercel · Stripe · Apple.
    Load order per surface:  tokens.css  →  surface stylesheet.

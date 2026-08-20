@@ -20,18 +20,22 @@ dinámicamente y no depende de qué otro JS cargue cada página.
 
 ## Los eventos
 
+> **2026-08-20 — el sitio ya no emite ninguna señal dura.** Con el cotizador
+> dado de baja se fueron `Lead`, `LeadCalificado`, `QuoteStarted`,
+> `QuotePriced`, `QuoteContactOpened` y `QuoteUnavailable`. Las dos señales
+> que quedan cuestan **un toque** cada una. Sirven para armar públicos;
+> **ninguna sirve para optimizar una campaña de conversión.** Volver a correr
+> conversiones exige construir antes un evento duro nuevo — ver
+> "2026-08-20" más abajo.
+
 | Evento | Tipo | Dónde dispara | Para qué |
 |---|---|---|---|
 | `PageView` | standard | Todas las páginas, en el load | Base de todo. Lo dispara el snippet, no `pixel-events.js`. |
 | `ViewContent` | standard | Load de `servicios/*.html` | **Público base de retargeting.** "Vio la landing de un servicio". |
-| `LeadCalificado` | custom | Envío del cotizador **confirmado por el backend** | **LA conversión. Es el evento de optimización de la campaña** desde el 2026-08-18. Ver "Señal blanda vs. señal dura". |
-| `Lead` | standard | Lo mismo que `LeadCalificado`, en el mismo momento | Mantiene andando los públicos y los informes que ya existían. **Ya no lo dispara el click a WhatsApp.** |
-| `ContactoIniciado` | custom | Click en cualquier link `wa.me` | **Diagnóstico.** Era `Lead` hasta el 2026-08-18: un toque valía una conversión y eso es lo que rompió la campaña C1. |
-| `Schedule` | standard | Click en cualquier link `calendar.app.google` | El otro camino de cierre: reunión agendada en vez de WhatsApp. **No usarlo como evento de optimización** — es de un toque, igual que `ContactoIniciado`. |
+| `ContactoIniciado` | custom | Click en cualquier link `wa.me` | **Blando.** Era `Lead` hasta el 2026-08-18: un toque valía una conversión y eso es lo que rompió la campaña C1. |
+| `AgendaAbierta` | custom | Click en cualquier link `calendar.app.google` | **Blando.** Abrió el calendario — *no* reservó. Se llamaba `Schedule` hasta el 2026-08-20. |
 | `LandingEngaged` | custom | Sección del caso visible en una landing, una sola vez | **Diagnóstico**, no público. Ver abajo. |
-| `QuoteStarted` | custom | Eligió un servicio en el cotizador | Arranque del embudo del cotizador. |
-| `QuotePriced` | custom | Vio un precio por primera vez (una vez por servicio elegido) | **Diagnóstico.** Contra `QuoteStarted`: cuántos abren el cotizador y se van sin llegar al número. |
-| `QuoteContactOpened` | custom | Pidió el formulario de contacto (una vez por servicio elegido) | **Diagnóstico.** Contra `QuotePriced`: si el precio espanta. Contra `Lead`: si la fricción es el formulario. |
+| `Schedule` | standard | **Nadie.** Reservado. | Vuelve el día que una reserva confirmada se pueda medir de verdad. |
 
 ### Parámetros
 
@@ -45,7 +49,7 @@ Events Manager.
 { content_name: 'Automatizaciones e integraciones', content_category: 'servicio',
   content_ids: ['automatizaciones'], content_type: 'product' }
 
-// ContactoIniciado / Schedule
+// ContactoIniciado / AgendaAbierta
 { content_name: …, content_category: 'servicio' | 'sitio', content_ids: [slug],
   location: 'hero' | 'inversion' | 'cta_final' | 'footer' | 'flotante' | 'nav' | 'nav_mobile' | 'contenido',
   source_page: '/servicios/automatizaciones.html' }
@@ -72,18 +76,35 @@ contenedor (footer / nav / sección) para no ensuciar el corte con `undefined`
 **Retargeting fase 2 — "visitó la landing y no convirtió":**
 
 ```
-INCLUIR: ViewContent       donde content_ids contiene 'automatizaciones'
-EXCLUIR: Lead              (todos)
-EXCLUIR: ContactoIniciado  (todos)
+INCLUIR: ViewContent        donde content_ids contiene 'automatizaciones'
+EXCLUIR: ContactoIniciado   (todos)
+EXCLUIR: AgendaAbierta      (todos)
 ```
 
 Ese es exactamente el público de la fase 2. La exclusión es lo que evita
 pagarle impresiones a gente que ya te escribió.
 
-> **Ojo — hay que tocar este público en Events Manager.** Desde el 2026-08-18
-> el click a WhatsApp dispara `ContactoIniciado` y ya no `Lead`. Si el público
-> excluye sólo por `Lead`, a todo el que te escriba por WhatsApp le vas a
-> seguir pagando impresiones. Sumá la segunda exclusión a mano.
+> **Ojo — hay que tocar este público en Events Manager.** El público viejo
+> excluía por `Lead`, que ya no dispara nadie: hoy esa exclusión no filtra a
+> nadie. Las dos exclusiones de arriba hay que cargarlas a mano.
+
+**Y este es el que importa de acá al lanzamiento.** Sin cotizador no hay
+conversión que medir, así que lo que el píxel tiene que hacer es **acumular
+públicos**, no optimizar. Los cuatro que valen la pena, todos con la ventana
+más larga que Meta permita:
+
+```
+Visitantes del sitio          (180 días)
+Interacciones con la cuenta de IG   (365 días)
+Reproducciones de video ≥75%  (365 días)
+ViewContent por servicio      (180 días, uno por slug)
+```
+
+Los seguidores de Instagram **no** son un público segmentable — Meta no
+expone "mis seguidores" como origen. El activo real es *interacciones con la
+cuenta*. Por eso, mientras el sitio se rediseña, lo único que no se puede
+romper es que `PageView` y `ViewContent` sigan disparando: si el píxel se cae
+una semana, es una semana de acumulación perdida.
 
 ## Decisiones que parecen raras y no lo son
 
@@ -198,8 +219,8 @@ pero no arregla el incentivo.
 
 | | Blando | Duro |
 |---|---|---|
-| Eventos | `ContactoIniciado`, `Schedule`, `QuoteStarted`, `QuotePriced`, `QuoteContactOpened`, `LandingEngaged` | `LeadCalificado` y `Lead` |
-| Cuesta | un toque | 4 campos válidos + confirmación del backend |
+| Eventos | `ContactoIniciado`, `AgendaAbierta`, `LandingEngaged` | *(ninguno desde el 2026-08-20)* |
+| Cuesta | un toque | una acción que alguien del otro lado confirma |
 | Sirve para | diagnóstico, embudo, públicos de exclusión | **optimizar la campaña** |
 
 Un evento blando **nunca** puede ser el evento de optimización de una campaña.
@@ -213,7 +234,38 @@ le da al algoritmo una hoja limpia, y ese nombre por definición sólo se puede
 disparar completando el formulario entero. `Lead` se sigue mandando para no
 romper los públicos ni los informes que ya existían.
 
+### 2026-08-20 — el cotizador se fue, y `Schedule` medía un click
+
+Dos cambios el mismo día, y el segundo es una repetición del error del 18.
+
+**El cotizador se dio de baja.** El sitio dejó de vender precio y pasó a pedir
+una conversación: agendar o escribir. Con él se fueron las únicas señales duras
+que teníamos. Queda anotado porque es la consecuencia que importa: **hoy no hay
+ningún evento contra el que una campaña de conversión pueda optimizar.**
+
+**Y `Schedule` pasó a llamarse `AgendaAbierta`.** Disparaba en el CLICK al link
+del calendario, no en la reserva. La reunión se agenda en el dominio de Google,
+en otra pestaña, y el sitio nunca se entera de si se completó. Lo que medimos:
+
+| | 7 días |
+|---|---|
+| Eventos `Schedule` registrados | 6 |
+| Reuniones que efectivamente llegaron al calendario | **0** |
+
+Un evento que se llama "agendó" cuando lo que realmente dice es "hizo click"
+miente igual que mentía `Lead` con el globo de WhatsApp. La corrección es la
+misma: que el evento se llame por lo que hace. `Schedule` queda reservado y
+sin disparar.
+
+**Para volver a tener una señal dura** hace falta una herramienta de reserva
+que redirija a una página de gracias propia, donde el evento dispare recién
+al confirmarse. Google Calendar no lo permite; Cal.com sí. Hasta entonces
+`Schedule` no lo dispara nadie, a propósito.
+
 ### Guardas anti-accidente del formulario
+
+> *Histórico — el formulario del cotizador se dio de baja el 2026-08-20. Se
+> deja escrito porque el criterio vale para cualquier formulario futuro.*
 
 Todo esto vive en `js/cotizador.js`, en `onSubmit()` y `validar()`.
 
@@ -286,8 +338,8 @@ así que se nota poco: mirá el log de PHP).
    Un **503** es que falta `META_CAPI_TOKEN` en `config/config.php`; un
    **422**, que el evento no está en `CAPI_EVENTOS`.
 4. El JS se cachea fuerte. Al testear cambios, hard reload (Ctrl+Shift+R), y
-   acordate de subirle el `?v=` a `pixel-events.js` y `cotizador.js` en el
-   HTML cuando lo despliegues.
+   acordate de subirle el `?v=` a `pixel-events.js` en el HTML cuando lo
+   despliegues.
 
 ## Si agregás un CTA nuevo
 
