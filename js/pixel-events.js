@@ -84,8 +84,8 @@
   }
 
   /* fbp, fbc, IP y user-agent no se mandan desde acá: al ser same-origin el
-     browser manda las cookies solo y PHP ve la IP real. Sólo viaja el email
-     cuando lo tenemos (el cotizador), que no está en ninguna cookie. */
+     browser manda las cookies solo y PHP ve la IP real. Hoy ningún evento
+     lleva user_data: no quedó ningún formulario en el sitio. */
   function aCapi(evento, params, id, userData) {
     try {
       const body = JSON.stringify({
@@ -107,11 +107,6 @@
       }).catch(function () {});
     } catch (e) { /* nunca romper la página por tracking */ }
   }
-
-  /* El cotizador vive en otro archivo (ver cabecera) y necesita el mismo
-     envío doble. Se expone acá en vez de duplicarlo: pixel-events.js está
-     en las 7 páginas públicas, así que siempre llega primero. */
-  window.CL_PIXEL = { track: track, trackCustom: trackCustom };
 
   function detectarPagina() {
     const archivo = (location.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';
@@ -139,7 +134,7 @@
 
   /* ============================================================
      ContactoIniciado — click a WhatsApp (señal BLANDA, de diagnóstico)
-     Schedule — click a "Agendá una reunión" (el otro camino de cierre)
+     AgendaAbierta — click a "Agendá una reunión" (igual de blanda)
 
      2026-08-18 — POR QUÉ ESTO YA NO ES `Lead`
 
@@ -159,9 +154,27 @@
 
      Así que el toque a WhatsApp pasa a ser un custom de diagnóstico. Se
      sigue midiendo (sirve para el embudo y para el público de exclusión),
-     pero ya NO es la señal contra la que Meta optimiza. `Lead` queda
-     reservado para el único envío que alguien confirma de verdad: el
-     formulario del cotizador, y recién cuando el backend responde ok.
+     pero ya NO es la señal contra la que Meta optimiza.
+
+     2026-08-20 — Y POR QUÉ `Schedule` AHORA ES `AgendaAbierta`
+
+     Mismo error, otro evento. `Schedule` disparaba en el CLICK al link del
+     calendario, no en la reserva. La reunión se agenda en el dominio de
+     Google, en otra pestaña, y el sitio nunca se entera de si se completó.
+     El resultado medido: 6 `Schedule` en 7 días y cero reuniones reales en
+     el calendario. Un evento que dice "agendó" cuando en realidad dice
+     "hizo click" miente igual que mentía `Lead`, así que pasa a llamarse
+     por lo que es.
+
+     `Schedule` queda reservado para el día que la reserva se confirme de
+     verdad. Eso pide una herramienta que redirija a una página de gracias
+     propia — Google Calendar no lo permite, Cal.com sí.
+
+     Con el cotizador dado de baja, el sitio ya no emite NINGUNA señal dura:
+     `Lead`, `LeadCalificado` y los `Quote*` se fueron con él. Las dos que
+     quedan, `ContactoIniciado` y `AgendaAbierta`, son de un toque. Sirven
+     para armar públicos, no para optimizar. Volver a correr campañas de
+     conversión exige construir antes un evento duro nuevo.
      Ver PIXEL-EVENTS.md → "Señal blanda vs. señal dura".
   ============================================================ */
   function initClicks() {
@@ -182,7 +195,7 @@
           source_page: location.pathname
         });
       } else if (href.indexOf('calendar.app.google') !== -1) {
-        track('Schedule', {
+        trackCustom('AgendaAbierta', {
           content_name: pagina.nombre,
           content_category: pagina.categoria,
           content_ids: [pagina.slug],

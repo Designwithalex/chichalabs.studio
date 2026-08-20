@@ -50,17 +50,19 @@ const CAPI_API_VERSION = 'v21.0';
  * inventados que después arruinan los públicos y la optimización.
  */
 const CAPI_EVENTOS = [
-    'PageView', 'ViewContent', 'Lead', 'Schedule',
-    'LandingEngaged', 'QuoteStarted', 'QuotePriced',
-    'QuoteContactOpened', 'QuoteUnavailable',
-    /* 2026-08-18 · señal dura y señal blanda separadas.
-       LeadCalificado  = envío del cotizador confirmado por el backend. Es el
-                         evento contra el que tiene que optimizar la campaña.
-       ContactoIniciado = click a WhatsApp. Antes disparaba `Lead` y con un
-                         solo toque valía una conversión: es lo que dejó a
-                         Meta comprando toques accidentales en Audience
-                         Network. Ahora es diagnóstico, no optimización. */
-    'LeadCalificado', 'ContactoIniciado',
+    'PageView', 'ViewContent', 'LandingEngaged',
+    /* Las dos señales que emite el sitio hoy. Las dos son de UN TOQUE:
+       ContactoIniciado = click a WhatsApp.
+       AgendaAbierta    = click al link del calendario — abrió el calendario,
+                          no reservó. La reserva ocurre en el dominio de
+                          Google y no la vemos. Ver js/pixel-events.js.
+       Sirven para armar públicos. Ninguna sirve para optimizar: cuando el
+       evento se consigue con un dedazo, Meta compra dedazos. */
+    'ContactoIniciado', 'AgendaAbierta',
+    /* Reservado. Vuelve el día que una reserva confirmada se pueda medir
+       de verdad (una herramienta que redirija a una página de gracias
+       propia). Hasta entonces no lo dispara nadie. */
+    'Schedule',
 ];
 
 /** Corta con un JSON. El front no lo mira, pero sirve para debuggear a mano. */
