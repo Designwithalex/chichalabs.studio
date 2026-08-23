@@ -1306,6 +1306,63 @@ body.nav-open { overflow: hidden; }
 .legal-body li strong { color: var(--ink); }
 
 /* ============================================================
+   PRODUCTOS PROPIOS
+   Misma familia visual que .case-card, pero sin visual arriba: acá el
+   peso lo lleva el texto. --pc es el color por producto y tiñe el glyph,
+   el borde en hover y el spotlight del cursor.
+   ============================================================ */
+.products-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+@media (min-width: 700px)  { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.product-card {
+  --pc: var(--green);
+  display: flex; flex-direction: column; gap: 0.6rem;
+  padding: 1.75rem 1.6rem 1.4rem;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface-1);
+  transition: border-color var(--t-mid), transform var(--t-mid), box-shadow var(--t-mid);
+  position: relative; isolation: isolate; overflow: hidden;
+}
+.product-card:hover {
+  border-color: color-mix(in srgb, var(--pc) 34%, transparent);
+  transform: translateY(-3px); box-shadow: var(--shadow-lg);
+}
+.product-card::after {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(220px circle at var(--x, 50%) var(--y, 50%),
+              color-mix(in srgb, var(--pc) 10%, transparent), transparent 60%);
+  opacity: 0; transition: opacity var(--t-mid); pointer-events: none;
+}
+.product-card:hover::after { opacity: 1; }
+.product-card > * { position: relative; z-index: 1; }
+
+.product-card__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.product-card__glyph { font-size: 1.5rem; line-height: 1; }
+.product-card__status {
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--pc); padding: 0.22rem 0.55rem; border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--pc) 30%, transparent);
+  background: color-mix(in srgb, var(--pc) 10%, transparent);
+  white-space: nowrap;
+}
+.product-card__name {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.4rem, 2.5vw, 1.75rem);
+  letter-spacing: var(--tracking-snug); line-height: 1.1; color: var(--ink);
+}
+.product-card__pitch { font-size: 0.95rem; color: var(--ink-2); line-height: 1.5; }
+.product-card__body  { font-size: 0.85rem; color: var(--ink-3); line-height: 1.65; }
+.product-card__who   { font-size: 0.8rem;  color: var(--ink-3); line-height: 1.6; opacity: 0.85; flex: 1; }
+.product-card__foot  { margin-top: 0.5rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.product-card__link  {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.02em;
+  color: var(--pc); transition: opacity var(--t-fast); word-break: break-all;
+}
+.product-card__link:hover { opacity: 0.7; }
+
+/* ============================================================
    PREFERS-REDUCED-MOTION
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
