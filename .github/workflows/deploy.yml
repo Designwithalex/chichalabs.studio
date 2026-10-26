@@ -47,3 +47,4 @@ jobs:
             n8n/**
             tools/**
             propuestas/*.pdf
+            propuestas/README.md
