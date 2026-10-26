@@ -384,12 +384,106 @@ a.badge:hover { background: var(--green-wash); }
 }
 .foot .wrap { display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 
+/* ── Descargar ───────────────────────────────────────────────────────────── */
+.btn svg { width: 1.15em; height: 1.15em; flex-shrink: 0; }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-strong); }
+.btn-ghost:hover { background: var(--glass-bg); border-color: var(--green-line); box-shadow: none; }
+.cover .dl { margin-top: var(--space-5); }
+.cta-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+@media (max-width: 640px) { .cta-actions { width: 100%; } .cta-actions .btn { width: 100%; justify-content: center; } }
+.dl-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  flex-shrink: 0;
+  padding: 0.4em 0.8em;
+  border: 1px solid var(--green-line);
+  border-radius: var(--radius-pill);
+  color: var(--green);
+  text-decoration: none;
+  transition: background var(--t-fast);
+}
+.dl-mini:hover { background: var(--green-wash); }
+.dl-mini svg { width: 1.1em; height: 1.1em; }
+
+/* ── WhatsApp flotante + nota escrita a mano ─────────────────────────────── */
+.wa-float {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.wa-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.8em 1.15em 0.8em 0.95em;
+  background: var(--green);
+  color: var(--ink-on-accent);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  text-decoration: none;
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--green-line);
+  transition: background var(--t-fast), transform var(--t-mid) var(--ease-out-quint);
+}
+.wa-btn:hover { background: var(--green-bright); transform: translateY(-2px); }
+.wa-btn svg { width: 1.5em; height: 1.5em; }
+.wa-note {
+  position: relative;
+  margin: 0 4.2rem 0.4rem 0;
+  font-family: 'Caveat', cursive;
+  font-weight: 600;
+  font-size: 1.6rem;
+  line-height: 1.05;
+  color: var(--ink);
+  text-align: right;
+  transform: rotate(-4deg);
+  padding: 0.35rem 0.7rem 0.45rem;
+  background: rgba(10, 10, 11, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: var(--radius-sm);
+  transition: opacity var(--t-slow) var(--ease-out-expo), transform var(--t-slow) var(--ease-out-expo);
+}
+.wa-arrow {
+  position: absolute;
+  right: -3.6rem;
+  top: 1.1rem;
+  width: 4.2rem;
+  height: auto;
+  color: var(--green);
+}
+.wa-float.quiet .wa-note { opacity: 0; transform: rotate(-4deg) translateY(8px); }
+@media (max-width: 640px) {
+  .wa-btn span { display: none; }
+  .wa-btn { padding: 0.8em; }
+  .wa-btn svg { width: 1.9em; height: 1.9em; }
+  .wa-note { font-size: 1.35rem; margin-right: 3.2rem; }
+  .wa-arrow { right: -3rem; width: 3.4rem; }
+}
+
 /* ── Imprimir / guardar como PDF desde el navegador ──────────────────────── */
 @media print {
-  @page { margin: 12mm; }
+  @page { size: A4; margin: 0; }
+  html, body { background: var(--bg); }
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .topbar { display: none; }
-  .cover { min-height: auto; }
+  .topbar, .wa-float, .dl, .dl-mini, .cta-actions .btn-ghost { display: none !important; }
+  .cover { min-height: 100vh; padding: var(--space-7) 0; }
+  .sec { padding: var(--space-7) 0 var(--space-6) !important; border-top: 0; }
+  .wrap { padding: 0 14mm; }
   .sec { break-before: page; padding: var(--space-6) 0; }
   .card, .step, .ref, .prow, .compare tr { break-inside: avoid; }
+  body { zoom: 0.8; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .cover { min-height: 125vh; }
+  .sub { margin-top: var(--space-6); }
+  .sec .intro { margin-bottom: var(--space-5); }
+  .cta { margin-top: var(--space-5); }
+  .foot { display: none; }
 }

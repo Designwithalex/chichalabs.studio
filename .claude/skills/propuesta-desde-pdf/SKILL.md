@@ -7,7 +7,8 @@ description: Convierte un PDF de propuesta/presupuesto de ChichaLabs en una pág
 2. Seguir `propuestas/README.md`: carpeta nueva con sufijo aleatorio, copiar la
    última propuesta como base y reemplazar el contenido. Respetar el texto del
    PDF tal cual; no inventar ni resumir.
-3. Verificar en 390 px y 1280 px con
+3. Generar `og.png` y el PDF descargable (pasos 5 y 6 del README).
+4. Verificar en 390 px y 1280 px con
    `npx -y playwright@1.48.0 screenshot -b cr --channel chrome --viewport-size=390,844 --full-page <url> <archivo>`
    sirviendo el repo con `php -S 127.0.0.1:8123 -t .`.
-4. Commit y push a `main` (publica por FTP en ~1 min). Dar el link final.
+5. Commit y push a `main` (publica por FTP en ~1 min). Dar el link final.
