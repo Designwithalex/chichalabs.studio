@@ -21,14 +21,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Caveat:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tokens.css?v=20260820">
-  <link rel="stylesheet" href="/propuestas/propuesta.css?v=20261026c">
+  <link rel="stylesheet" href="/propuestas/propuesta.css?v=20261026d">
 </head>
 <body>
 
 <header class="topbar">
   <div class="wrap">
     <span class="brand">[ CHICHALABS ]<small>STUDIO</small></span>
-    <nav class="toc mono" aria-label="Secciones">
+    <nav class="toc mono" id="toc" aria-label="Secciones">
       <a href="#opciones">Opciones</a>
       <a href="#alcance">Alcance</a>
       <a href="#opcion-3d">Opción 3D</a>
@@ -36,6 +36,7 @@
       <a href="#inversion">Inversión</a>
     </nav>
     <a class="dl-mini mono" href="AG-Estudio_Propuesta-24_ChichaLabs.pdf" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PDF</span></a>
+    <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="toc"><span></span><span></span></button>
   </div>
 </header>
 
@@ -388,6 +389,20 @@
 </div>
 
 <script>
+  // Menú hamburguesa (sólo se ve en celular).
+  (function () {
+    var bar = document.querySelector('.topbar');
+    var btn = bar.querySelector('.menu-btn');
+    function set(open) {
+      bar.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+      btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    }
+    btn.addEventListener('click', function () { set(!bar.classList.contains('open')); });
+    bar.querySelectorAll('.toc a').forEach(function (a) { a.addEventListener('click', function () { set(false); }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+  })();
+
   // La nota escrita a mano se ve en la portada y al llegar a la inversión; en el medio molesta.
   (function () {
     var f = document.getElementById('wa-float');

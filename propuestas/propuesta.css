@@ -79,6 +79,54 @@ strong { color: var(--ink); font-weight: 600; }
   transition: color var(--t-fast);
 }
 .toc a:hover, .toc a:focus-visible { color: var(--green); }
+.menu-btn { display: none; }
+@media (max-width: 640px) {
+  .dl-mini { margin-left: auto; }
+  .menu-btn {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-right: -0.5rem;
+    padding: 0 0.6rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .menu-btn span {
+    display: block;
+    height: 1.5px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform var(--t-mid) var(--ease-out-quint);
+  }
+  .topbar.open .menu-btn span:first-child { transform: translateY(3.75px) rotate(45deg); }
+  .topbar.open .menu-btn span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
+  .toc {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: var(--space-2) clamp(1rem, 4vw, 2rem) var(--space-4);
+    background: var(--bg);
+    box-shadow: var(--shadow-lg);
+    border-bottom: 1px solid var(--line);
+    -webkit-mask-image: none;
+            mask-image: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity var(--t-mid), transform var(--t-mid) var(--ease-out-quint), visibility var(--t-mid);
+  }
+  .topbar.open .toc { opacity: 1; visibility: visible; transform: none; }
+  .toc a { padding: var(--space-4) 0; font-size: var(--fs-xs); color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+  .toc a:last-child { border-bottom: 0; }
+}
 @media (max-width: 640px) {
   .brand small { display: none; }
   .topbar .wrap { gap: var(--space-4); }
